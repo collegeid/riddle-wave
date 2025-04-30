@@ -118,8 +118,9 @@ public class GameplayScene {
         jumpscareImage.setFitHeight(720);
         jumpscareImage.setPreserveRatio(true);
         jumpscareImage.setVisible(false);
-        AnchorPane.setLeftAnchor(jumpscareImage, 0.0);
-        AnchorPane.setBottomAnchor(jumpscareImage, 0.0);
+        AnchorPane.setLeftAnchor(jumpscareImage, (1280.0 - 720.0) / 2); // Centered approx
+        AnchorPane.setTopAnchor(jumpscareImage, 0.0);
+
 
         // Add all
         root.getChildren().addAll(jumpscareImage, dialogBubble, bot, timerLabel, lifeBox, questionBox, mulaiBtn);
@@ -142,6 +143,13 @@ public class GameplayScene {
         questionBox.getChildren().clear();
 
         Label qLabel = new Label(q.getText());
+        qLabel.setStyle(
+            "-fx-background-color: rgba(0, 0, 0, 0.7);" +
+            "-fx-text-fill: white;" +
+            "-fx-padding: 15px;" +
+            "-fx-background-radius: 15;" +
+            "-fx-font-size: 22px;"
+        );
         qLabel.setWrapText(true);
         qLabel.setFont(Font.font("Arial", 24));
         questionBox.getChildren().add(qLabel);
@@ -152,11 +160,18 @@ public class GameplayScene {
             String label = optChar + ". " + opts[i];
             Button optBtn = new Button(label);
             optBtn.setMaxWidth(Double.MAX_VALUE);
-            optBtn.setStyle("-fx-font-size: 18px; -fx-background-color: #fff; -fx-border-radius: 10; -fx-padding: 10px;");
+            optBtn.setStyle(
+                "-fx-background-color: rgba(255, 255, 255, 0.25);" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 18px;" +
+                "-fx-background-radius: 20;" +
+                "-fx-padding: 12px 20px;" +
+                "-fx-border-color: white;" +
+                "-fx-border-width: 1px;"
+            );
             int finalI = i;
-            optBtn.setOnMouseEntered(ev -> optBtn.setStyle("-fx-background-color: #f0f0f0; -fx-border-radius: 10; -fx-padding: 10px;"));
-            optBtn.setOnMouseExited(ev -> optBtn.setStyle("-fx-background-color: #fff; -fx-border-radius: 10; -fx-padding: 10px;"));
-            optBtn.setOnAction(e -> {
+            optBtn.setOnMouseEntered(ev -> optBtn.setStyle("-fx-background-color: rgba(255,255,255,0.4); -fx-text-fill: black; -fx-font-size: 18px; -fx-background-radius: 15; -fx-padding: 10px;"));
+            optBtn.setOnMouseExited(ev -> optBtn.setStyle("-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 18px; -fx-background-radius: 15; -fx-padding: 10px;"));            optBtn.setOnAction(e -> {
                 timer.stop();
                 checkAnswer(stage, q, String.valueOf(optChar), provinceName);
             });
@@ -211,6 +226,8 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
     jumpscareImage.setVisible(true);
     dialogBubble.setVisible(true);
     dialogText.setText(msg);
+    playTypingEffect(msg);
+
 
     PauseTransition wait = new PauseTransition(Duration.seconds(5));
     wait.setOnFinished(e -> {
@@ -224,7 +241,7 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
             questionBox.getChildren().add(backBtn);
             questionBox.setVisible(true);
         } else {
-            dialogBubble.setVisible(false);
+            dialogBubble.setVisible(true);
             questionBox.setVisible(true);
             currentIndex++;
             showNextQuestion(stage, provinceName);
