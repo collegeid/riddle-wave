@@ -1,13 +1,11 @@
 package riddlewave;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class ProvinceManager {
     private static final String FILE_PATH = "resources/save/provinces.properties";
-    private static final Map<String, Boolean> provinceStatus = new HashMap<>();
+    private static final Map<String, Boolean> provinceStatus = new LinkedHashMap<>(); // Gunakan LinkedHashMap agar urutan terjaga
 
     static {
         load(); // Panggil saat pertama
@@ -16,6 +14,33 @@ public class ProvinceManager {
     public static void unlock(String province) {
         provinceStatus.put(province, false); // false = unlocked
         save();
+    }
+
+    public static void unlockNext(String currentProvince) {
+        try {
+            Properties prop = new Properties();
+            File file = new File(FILE_PATH);
+            FileInputStream fis = new FileInputStream(file);
+            prop.load(fis);
+            fis.close();
+
+            List<String> keys = new ArrayList<>(prop.stringPropertyNames());
+            Collections.sort(keys); // urutkan jika perlu
+            int index = keys.indexOf(currentProvince);
+
+            if (index >= 0 && index + 1 < keys.size()) {
+                String nextProvince = keys.get(index + 1);
+                if ("true".equals(prop.getProperty(nextProvince))) {
+                    prop.setProperty(nextProvince, "false");
+                    try (FileOutputStream fos = new FileOutputStream(file)) {
+                        prop.store(fos, "Unlocked next province");
+                    }
+                    System.out.println("Unlocked province: " + nextProvince);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Gagal unlock provinsi berikutnya: " + e.getMessage());
+        }
     }
 
     public static boolean isLocked(String province) {
@@ -33,17 +58,17 @@ public class ProvinceManager {
             if (!file.exists()) {
                 file.getParentFile().mkdirs();
                 file.createNewFile();
-                // Default init
-                provinceStatus.put("Java", false); // awal hanya Java terbuka
+                // Default initial setup
+                provinceStatus.put("Java", false);
                 provinceStatus.put("Kalimantan", true);
                 provinceStatus.put("Sulawesi", true);
-       
                 save();
             } else {
                 try (FileInputStream in = new FileInputStream(FILE_PATH)) {
                     prop.load(in);
+                    provinceStatus.clear();
                     for (String key : prop.stringPropertyNames()) {
-                        provinceStatus.put(key, Boolean.valueOf(prop.getProperty(key)));
+                        provinceStatus.put(key, Boolean.parseBoolean(prop.getProperty(key)));
                     }
                 }
             }

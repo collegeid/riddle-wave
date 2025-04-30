@@ -1,6 +1,7 @@
 package riddlewave;
 
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -22,24 +23,29 @@ public class GameplayScene {
     private static final int MAX_LIVES = 3;
     private static final int TIME_PER_QUESTION = 30;
 
-    private static int currentIndex = 0;
-    private static int lives = MAX_LIVES;
-    private static int timeLeft = TIME_PER_QUESTION;
+    private static int currentIndex;
+    private static int lives;
+    private static int timeLeft;
 
     private static Timeline timer;
     private static Label timerLabel;
     private static HBox lifeBox;
     private static Text dialogText;
     private static VBox questionBox;
-    private static ImageView jumpscareImg;
+    private static ImageView jumpscareImage;
+    private static VBox dialogBubble;
 
     private static List<Question> questions;
 
     public static void show(Stage stage, String provinceName) {
+        currentIndex = 0;
+        lives = MAX_LIVES;
+
         AnchorPane root = new AnchorPane();
 
         // Background
-        ImageView bg = new ImageView(new Image("file:resources/assets/Bg/bg_game_jawa.png"));
+        String bgPath = "file:resources/assets/Bg/" + provinceName.toLowerCase() + ".png";
+        ImageView bg = new ImageView(new Image(bgPath));
         bg.setFitWidth(1920);
         bg.setFitHeight(1080);
         bg.setPreserveRatio(false);
@@ -52,15 +58,15 @@ public class GameplayScene {
         AnchorPane.setLeftAnchor(bot, 30.0);
         AnchorPane.setBottomAnchor(bot, 30.0);
 
-        // Dialog Bubble
+        // Dialog bubble
         dialogText = new Text();
         dialogText.setFont(Font.font("Verdana", 20));
         dialogText.setStyle("-fx-fill: white;");
-        VBox bubble = new VBox(dialogText);
-        bubble.setStyle("-fx-background-color: rgba(0,0,0,0.7); -fx-padding: 20px; -fx-background-radius: 15;");
-        bubble.setMaxWidth(600);
-        AnchorPane.setLeftAnchor(bubble, 300.0);
-        AnchorPane.setBottomAnchor(bubble, 200.0);
+        dialogBubble = new VBox(dialogText);
+        dialogBubble.setStyle("-fx-background-color: rgba(0,0,0,0.7); -fx-padding: 20px; -fx-background-radius: 15;");
+        dialogBubble.setMaxWidth(600);
+        AnchorPane.setLeftAnchor(dialogBubble, 300.0);
+        AnchorPane.setBottomAnchor(dialogBubble, 200.0);
 
         // Timer
         timerLabel = new Label();
@@ -80,39 +86,43 @@ public class GameplayScene {
         AnchorPane.setTopAnchor(lifeBox, 20.0);
         AnchorPane.setLeftAnchor(lifeBox, 40.0);
 
-        // Soal
+        // Question area
         questionBox = new VBox(20);
         questionBox.setAlignment(Pos.CENTER);
         questionBox.setPadding(new Insets(20));
-        AnchorPane.setTopAnchor(questionBox, 250.0);
+        AnchorPane.setBottomAnchor(questionBox, 100.0);
         AnchorPane.setLeftAnchor(questionBox, 350.0);
         AnchorPane.setRightAnchor(questionBox, 350.0);
 
-        // Jumpscare (overlay hidden)
-        jumpscareImg = new ImageView(new Image("file:resources/assets/Karakter/jumpscare.png"));
-        jumpscareImg.setFitWidth(1280);
-        jumpscareImg.setPreserveRatio(true);
-        jumpscareImg.setVisible(false);
-        root.getChildren().add(jumpscareImg);
-
-        // Load Narasi dan Soal
+        // Load questions and narration
         questions = QuestionManager.loadQuestions(provinceName);
         String narasi = QuestionManager.loadNarration(provinceName);
         playTypingEffect(narasi);
 
-        // Tombol Mulai
+        // Tombol mulai
         Button mulaiBtn = new Button("Mulai");
-        mulaiBtn.setFont(Font.font(20));
+        mulaiBtn.setFont(Font.font(18));
         AnchorPane.setBottomAnchor(mulaiBtn, 40.0);
         AnchorPane.setRightAnchor(mulaiBtn, 40.0);
+      mulaiBtn.setOnAction(e -> {
+        root.getChildren().remove(mulaiBtn);
+        root.getChildren().remove(bot);
+        root.getChildren().remove(dialogBubble);
+        updateHearts(); // ✅ Tambahkan ini
+        showNextQuestion(stage, provinceName);
+      });
 
-        mulaiBtn.setOnAction(e -> {
-            root.getChildren().removeAll(bot, bubble, mulaiBtn);
-            showNextQuestion(stage, provinceName);
-        });
 
-        root.getChildren().addAll(bot, bubble, timerLabel, lifeBox, questionBox, mulaiBtn);
+        // Jumpscare
+        jumpscareImage = new ImageView(new Image("file:resources/assets/Karakter/Monster3.png"));
+        jumpscareImage.setFitHeight(720);
+        jumpscareImage.setPreserveRatio(true);
+        jumpscareImage.setVisible(false);
+        AnchorPane.setLeftAnchor(jumpscareImage, 0.0);
+        AnchorPane.setBottomAnchor(jumpscareImage, 0.0);
 
+        // Add all
+        root.getChildren().addAll(jumpscareImage, dialogBubble, bot, timerLabel, lifeBox, questionBox, mulaiBtn);
         Scene scene = new Scene(root, 1280, 720);
         stage.setScene(scene);
         stage.setFullScreen(true);
@@ -120,8 +130,11 @@ public class GameplayScene {
 
     private static void showNextQuestion(Stage stage, String provinceName) {
         if (currentIndex >= questions.size()) {
-            dialogText.setText("Kamu berhasil menyelesaikan provinsi ini!");
-            ProvinceManager.unlock(provinceName);
+            dialogText.setText("Kamu berhasil! Provinsi selanjutnya terbuka.");
+            ProvinceManager.unlockNext(provinceName);
+            PauseTransition delay = new PauseTransition(Duration.seconds(4));
+            delay.setOnFinished(e -> MapSelectionScene.show(stage));
+            delay.play();
             return;
         }
 
@@ -130,7 +143,7 @@ public class GameplayScene {
 
         Label qLabel = new Label(q.getText());
         qLabel.setWrapText(true);
-        qLabel.setFont(Font.font("Arial", 22));
+        qLabel.setFont(Font.font("Arial", 24));
         questionBox.getChildren().add(qLabel);
 
         String[] opts = q.getOptions();
@@ -139,7 +152,10 @@ public class GameplayScene {
             String label = optChar + ". " + opts[i];
             Button optBtn = new Button(label);
             optBtn.setMaxWidth(Double.MAX_VALUE);
+            optBtn.setStyle("-fx-font-size: 18px; -fx-background-color: #fff; -fx-border-radius: 10; -fx-padding: 10px;");
             int finalI = i;
+            optBtn.setOnMouseEntered(ev -> optBtn.setStyle("-fx-background-color: #f0f0f0; -fx-border-radius: 10; -fx-padding: 10px;"));
+            optBtn.setOnMouseExited(ev -> optBtn.setStyle("-fx-background-color: #fff; -fx-border-radius: 10; -fx-padding: 10px;"));
             optBtn.setOnAction(e -> {
                 timer.stop();
                 checkAnswer(stage, q, String.valueOf(optChar), provinceName);
@@ -153,21 +169,18 @@ public class GameplayScene {
     private static void checkAnswer(Stage stage, Question q, String chosen, String provinceName) {
         if (!q.getCorrectAnswer().equalsIgnoreCase(chosen)) {
             lives--;
-            dialogText.setText("Jawaban salah! Nyawamu berkurang.");
-            showJumpscare();
             updateHearts();
+            if (lives <= 0) {
+                showJumpscare(stage, "Yahh... nyawamu habis. Game Over!", true, provinceName);
+            } else {
+                showJumpscare(stage, "Jawaban salah! Nyawa berkurang.", false, provinceName);
+            }
         } else {
+            dialogBubble.setVisible(true);
             dialogText.setText("Bagus! Jawabanmu benar.");
+            currentIndex++;
+            showNextQuestion(stage, provinceName);
         }
-
-        if (lives <= 0) {
-            dialogText.setText("Yahh... nyawamu habis. Game Over!");
-            questionBox.getChildren().clear();
-            return;
-        }
-
-        currentIndex++;
-        showNextQuestion(stage, provinceName);
     }
 
     private static void resetTimer(Stage stage, Question q, String provinceName) {
@@ -178,25 +191,47 @@ public class GameplayScene {
         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             timeLeft--;
             timerLabel.setText(timeLeft + " detik");
-
             if (timeLeft <= 0) {
                 timer.stop();
                 lives--;
-                dialogText.setText("Waktu habis! Nyawa berkurang.");
                 updateHearts();
-
                 if (lives <= 0) {
-                    dialogText.setText("Yahh... nyawamu habis. Game Over!");
-                    questionBox.getChildren().clear();
+                    showJumpscare(stage, "Yahh... nyawamu habis. Game Over!", true, provinceName);
                 } else {
-                    currentIndex++;
-                    showNextQuestion(stage, provinceName);
+                    showJumpscare(stage, "Waktu habis! Nyawa berkurang.", false, provinceName);
                 }
             }
         }));
         timer.setCycleCount(TIME_PER_QUESTION);
         timer.play();
     }
+
+private static void showJumpscare(Stage stage, String msg, boolean isGameOver, String provinceName) {
+    questionBox.setVisible(false);
+    jumpscareImage.setVisible(true);
+    dialogBubble.setVisible(true);
+    dialogText.setText(msg);
+
+    PauseTransition wait = new PauseTransition(Duration.seconds(5));
+    wait.setOnFinished(e -> {
+        jumpscareImage.setVisible(false);
+        if (isGameOver) {
+            dialogText.setText("Yahh... kamu kalah. Coba lagi ya!");
+            Button backBtn = new Button("Kembali ke Map");
+            backBtn.setFont(Font.font(18));
+            backBtn.setOnAction(ev -> MapSelectionScene.show(stage));
+            questionBox.getChildren().clear();
+            questionBox.getChildren().add(backBtn);
+            questionBox.setVisible(true);
+        } else {
+            dialogBubble.setVisible(false);
+            questionBox.setVisible(true);
+            currentIndex++;
+            showNextQuestion(stage, provinceName);
+        }
+    });
+    wait.play();
+}
 
     private static void updateHearts() {
         lifeBox.getChildren().clear();
@@ -208,12 +243,12 @@ public class GameplayScene {
         }
     }
 
-    private static void playTypingEffect(String fullText) {
+    private static void playTypingEffect(String text) {
         Timeline typing = new Timeline();
         final int[] i = {0};
-        typing.getKeyFrames().add(new KeyFrame(Duration.millis(35), ev -> {
-            if (i[0] < fullText.length()) {
-                dialogText.setText(fullText.substring(0, i[0] + 1));
+        typing.getKeyFrames().add(new KeyFrame(Duration.millis(30), ev -> {
+            if (i[0] < text.length()) {
+                dialogText.setText(text.substring(0, i[0] + 1));
                 i[0]++;
             } else {
                 typing.stop();
@@ -221,12 +256,5 @@ public class GameplayScene {
         }));
         typing.setCycleCount(Timeline.INDEFINITE);
         typing.play();
-    }
-
-    private static void showJumpscare() {
-        jumpscareImg.setVisible(true);
-        Timeline hide = new Timeline(new KeyFrame(Duration.seconds(1), ev -> jumpscareImg.setVisible(false)));
-        hide.setCycleCount(1);
-        hide.play();
     }
 }
