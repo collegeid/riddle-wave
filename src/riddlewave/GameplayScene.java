@@ -144,7 +144,7 @@ public class GameplayScene {
         questionBox.setVisible(false);
 
         // Langsung isi teks, tanpa animasi typing
-        dialogText.setText("Keren! Kamu berhasil menyelesaikan provinsi ini.");
+        dialogText.setText("Keren! Kamu berhasil menyelesaikan Pulau " + provinceName + " ini");
         dialogBubble.setVisible(true);
 
         // Tambahkan kembali bot Wisanggeni jika belum ada

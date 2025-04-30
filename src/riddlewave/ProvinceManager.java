@@ -33,7 +33,7 @@ public class ProvinceManager {
             if ("true".equals(prop.getProperty(nextProvince))) {
                 prop.setProperty(nextProvince, "false");
                 try (FileOutputStream fos = new FileOutputStream(file)) {
-                    prop.store(fos, "Unlocked next province");
+                    prop.store(fos, "Unlocked next Pulau");
                 }
 
                 // ✅ Reload ke memory setelah perubahan file
@@ -43,7 +43,7 @@ public class ProvinceManager {
             }
         }
     } catch (IOException e) {
-        System.out.println("Gagal unlock provinsi berikutnya: " + e.getMessage());
+        System.out.println("Gagal unlock Pulau berikutnya: " + e.getMessage());
     }
 }
 
@@ -84,7 +84,7 @@ public class ProvinceManager {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Gagal memuat provinsi: " + e.getMessage());
+            System.out.println("Gagal memuat Pulau: " + e.getMessage());
         }
     }
 
@@ -95,10 +95,10 @@ public class ProvinceManager {
                 prop.setProperty(entry.getKey(), entry.getValue().toString());
             }
             try (FileOutputStream out = new FileOutputStream(FILE_PATH)) {
-                prop.store(out, "Provinsi Riddle Wave");
+                prop.store(out, "Pulau Riddle Wave");
             }
         } catch (IOException e) {
-            System.out.println("Gagal menyimpan provinsi: " + e.getMessage());
+            System.out.println("Gagal menyimpan Pulau: " + e.getMessage());
         }
     }
 }

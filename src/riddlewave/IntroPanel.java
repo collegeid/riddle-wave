@@ -14,7 +14,7 @@ import javafx.util.Duration;
 
 public class IntroPanel {
 
-    private static final String INTRO_TEXT = "Halo! Namaku Wisanggeni.\nAku akan memandumu di game Riddle Wave.\nSiapkan dirimu untuk menjawab teka-teki dari berbagai provinsi\n Di Indonesia!";
+    private static final String INTRO_TEXT = "Halo! Namaku Wisanggeni.\nAku akan memandumu di game Riddle Wave.\nSiapkan dirimu untuk menjawab teka-teki dari berbagai Pulau\n Di Indonesia!";
 
     public static void show(Stage stage) {
         AnchorPane root = new AnchorPane();

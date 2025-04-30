@@ -115,7 +115,7 @@ public class MapSelectionScene {
 
         container.setOnMouseClicked(e -> {
             if (locked) {
-                playTypingEffect("Hehh! Provinsi ini masih terkunci.\nSelesaikan provinsi sebelumnya untuk membukanya !!!.");
+                playTypingEffect("Hehh! Pulau" + provinceKey + " ini masih terkunci.\nSelesaikan Pulau sebelumnya untuk membukanya !!!.");
             } else {
                 System.out.println("Provinsi dipilih: " + provinceKey);
                 riddlewave.GameplayScene.show(

@@ -30,7 +30,7 @@ public class QuestionManager {
             }
 
         } catch (IOException e) {
-            System.out.println("Gagal membaca soal untuk provinsi " + province + ": " + e.getMessage());
+            System.out.println("Gagal membaca soal untuk Pulau " + province + ": " + e.getMessage());
         }
 
         return questions;
@@ -41,7 +41,7 @@ public class QuestionManager {
         try {
             return new String(Files.readAllBytes(Paths.get(filePath)));
         } catch (IOException e) {
-            System.out.println("Gagal membaca narasi untuk provinsi " + province + ": " + e.getMessage());
+            System.out.println("Gagal membaca narasi untuk Pulau " + province + ": " + e.getMessage());
             return "";
         }
     }
