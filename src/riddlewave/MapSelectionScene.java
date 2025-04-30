@@ -18,6 +18,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import java.io.File;
+import javafx.scene.media.AudioClip;
 
 import java.util.Map;
 
@@ -117,6 +119,8 @@ public class MapSelectionScene {
         Scene scene = new Scene(root, 1280, 720);
         scene.widthProperty().addListener((obs, oldVal, newVal) -> bg.setFitWidth(newVal.doubleValue()));
         scene.heightProperty().addListener((obs, oldVal, newVal) -> bg.setFitHeight(newVal.doubleValue()));
+        stage.setTitle("Map Selection - Riddle Wave");
+
         stage.setScene(scene);
         stage.setFullScreen(true);
 
@@ -184,20 +188,27 @@ private static StackPane createProvinceItem(String provinceKey, boolean locked, 
     return new StackPane(itemBox);
 }
 
-    private static void playTypingEffect(String text) {
-        Timeline typing = new Timeline();
-        final int[] i = {0};
-        typing.getKeyFrames().add(new KeyFrame(Duration.millis(30), ev -> {
-            if (i[0] < text.length()) {
-                dialogText.setText(text.substring(0, i[0] + 1));
-                i[0]++;
-            } else {
-                typing.stop();
-            }
-        }));
-        typing.setCycleCount(Timeline.INDEFINITE);
-        typing.play();
-    }
+    private static void playTypingEffect(String fullText) {
+    dialogText.setText(""); // Kosongkan sebelum mulai
+    File soundFile = new File("resources/assets/audio/ketik.wav");
+    String soundPath = soundFile.toURI().toString();
+
+    Timeline typing = new Timeline();
+    final int[] i = {0};
+
+    typing.getKeyFrames().add(new KeyFrame(Duration.millis(30), ev -> {
+        if (i[0] < fullText.length()) {
+            dialogText.setText(fullText.substring(0, i[0] + 1));
+            new AudioClip(soundPath).play(); // Play per huruf
+            i[0]++;
+        } else {
+            typing.stop();
+        }
+    }));
+
+    typing.setCycleCount(Timeline.INDEFINITE);
+    typing.play();
+}
 
 private static void refreshProvinceRow() {
     provinceRow.getChildren().clear();

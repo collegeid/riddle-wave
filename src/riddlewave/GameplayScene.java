@@ -1,5 +1,6 @@
 package riddlewave;
 
+import java.io.File;
 import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
@@ -15,6 +16,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.media.AudioClip;
 
 import java.util.List;
 
@@ -99,7 +101,8 @@ public class GameplayScene {
         // Load questions and narration
         questions = QuestionManager.loadQuestions(provinceName);
         String narasi = QuestionManager.loadNarration(provinceName);
-        playTypingEffect(narasi);
+        dialogText.setText(narasi); // Set dulu teks lengkap
+        playTypingEffectText(dialogText); // Lalu mainkan efek ketikannya
 
         // Tombol mulai
         Button mulaiBtn = new Button("Mulai");
@@ -129,6 +132,8 @@ public class GameplayScene {
         // Add all
         root.getChildren().addAll(jumpscareImage, dialogBubble, bot, timerLabel, lifeBox, questionBox, mulaiBtn);
         Scene scene = new Scene(root, 1280, 720);
+        stage.setTitle("Game Play - Riddle Wave");
+
         stage.setScene(scene);
         stage.setFullScreen(true);
     }
@@ -145,38 +150,39 @@ public class GameplayScene {
        
         dialogText.setText(""); // Kosongkan dulu
         // Langsung isi teks, tanpa animasi typing
-        dialogText.setText("Keren! Kamu berhasil menyelesaikan Pulau " + provinceName + " ini");
-        dialogBubble.setVisible(true);
+ dialogText.setText("Keren! Kamu berhasil menyelesaikan Pulau " + provinceName + " ini");
+dialogBubble.setVisible(true);
 
-        // Tambahkan kembali bot Wisanggeni jika belum ada
-        ImageView newBot = new ImageView(new Image("file:resources/assets/Karakter/Wisanggeni.png"));
-        newBot.setFitHeight(450);
-        newBot.setPreserveRatio(true);
-        AnchorPane.setLeftAnchor(newBot, 50.0);
-        AnchorPane.setBottomAnchor(newBot, 50.0);
+playTypingEffectTextCallback(dialogText, () -> {
+    // Jalankan setelah efek ketik selesai
+    // Tambahkan kembali bot Wisanggeni
+    ImageView newBot = new ImageView(new Image("file:resources/assets/Karakter/Wisanggeni.png"));
+    newBot.setFitHeight(450);
+    newBot.setPreserveRatio(true);
+    AnchorPane.setLeftAnchor(newBot, 50.0);
+    AnchorPane.setBottomAnchor(newBot, 50.0);
 
-        if (!rootPane.getChildren().contains(newBot)) {
-            rootPane.getChildren().add(newBot);
-        }
+    if (!rootPane.getChildren().contains(newBot)) {
+        rootPane.getChildren().add(newBot);
+    }
 
-        // Tambahkan tombol kembali ke map
-        Button backBtn = new Button("Kembali ke Map");
-        backBtn.setFont(Font.font(18));
-        AnchorPane.setBottomAnchor(backBtn, 40.0);
-        AnchorPane.setRightAnchor(backBtn, 40.0);
-        backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
-        backBtn.setOnAction(e -> MapSelectionScene.show(stage));
+    // Tombol kembali ke map
+    Button backBtn = new Button("Lanjut Pulau Lain");
+    backBtn.setFont(Font.font(18));
+    AnchorPane.setBottomAnchor(backBtn, 40.0);
+    AnchorPane.setRightAnchor(backBtn, 40.0);
+    backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
+    backBtn.setOnAction(e -> MapSelectionScene.show(stage));
 
-        VBox finishBox = new VBox(20, dialogBubble, backBtn);
-        finishBox.setAlignment(Pos.CENTER);
+    VBox finishBox = new VBox(20, dialogBubble, backBtn);
+    finishBox.setAlignment(Pos.CENTER);
+    AnchorPane.setBottomAnchor(finishBox, 100.0);
+    AnchorPane.setLeftAnchor(finishBox, 360.0);
 
-        AnchorPane.setBottomAnchor(finishBox, 100.0);
-        AnchorPane.setLeftAnchor(finishBox, 360.0); // Sesuaikan posisi tengah
-
-        if (!rootPane.getChildren().contains(finishBox)) {
-            rootPane.getChildren().add(finishBox);
-        }
-
+    if (!rootPane.getChildren().contains(finishBox)) {
+        rootPane.getChildren().add(finishBox);
+    }
+});
         return;
     }
 
@@ -251,7 +257,7 @@ public class GameplayScene {
             lives--;
             updateHearts();
             if (lives <= 0) {
-                showJumpscare(stage, "Yahh... nyawamu habis. Game Over!", true, provinceName);
+                showJumpscare(stage, "Game Over! \n\nHahahaaa... nyawamu habis.\nSemoga beruntung di lain kesempatan!", true, provinceName);
             } else {
                 //showJumpscare(stage, "Jawaban salah! Nyawa berkurang.", false, provinceName);
             }
@@ -276,7 +282,7 @@ public class GameplayScene {
                 lives--;
                 updateHearts();
                 if (lives <= 0) {
-                    showJumpscare(stage, "Yahh... nyawamu habis. Game Over!", true, provinceName);
+                    showJumpscare(stage, "Game Over! \n\nHahahaaa... nyawamu habis. Semoga beruntung di lain kesempatan!", true, provinceName);
                 } else {
                     //showJumpscare(stage, "Waktu habis! Nyawa berkurang.", false, provinceName);
                 }
@@ -303,8 +309,10 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
 
         // Buat dialog teks
         Text gameOverText = new Text(msg);
+        
         gameOverText.setFont(Font.font("Verdana", 20));
         gameOverText.setStyle("-fx-fill: white;");
+        playTypingEffectText(gameOverText);
 
         VBox gameOverBubble = new VBox(gameOverText);
         gameOverBubble.setStyle("-fx-background-color: rgba(0,0,0,0.8); -fx-padding: 18px; -fx-background-radius: 15;");
@@ -376,4 +384,62 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
         typing.setCycleCount(Timeline.INDEFINITE);
         typing.play();
     }
+    
+private static void playTypingEffectTextCallback(Text targetText, Runnable onFinished) {
+    String fullText = targetText.getText();
+    targetText.setText(""); // kosongkan dulu
+
+    File soundFile = new File("resources/assets/audio/ketik.wav");
+    String soundPath = soundFile.toURI().toString();
+    AudioClip clickSound = new AudioClip(soundPath);
+
+    Timeline typing = new Timeline();
+    final int[] i = {0};
+
+    typing.getKeyFrames().add(new KeyFrame(Duration.millis(30), ev -> {
+        if (i[0] < fullText.length()) {
+            targetText.setText(fullText.substring(0, i[0] + 1));
+            clickSound.play();
+            i[0]++;
+        } else {
+            typing.stop();
+            if (onFinished != null) {
+                onFinished.run();
+            }
+        }
+    }));
+
+    typing.setCycleCount(Timeline.INDEFINITE);
+    typing.play();
+}
+
+private static void playTypingEffectText(Text targetText) {
+    String fullText = targetText.getText();
+    targetText.setText(""); // kosongkan dulu
+
+    File soundFile = new File("resources/assets/audio/ketik.wav"); // ganti nama file jika perlu
+    String soundPath = soundFile.toURI().toString();
+
+    Timeline typing = new Timeline();
+    final int[] i = {0};
+
+    typing.getKeyFrames().add(new KeyFrame(Duration.millis(30), ev -> {
+        if (i[0] < fullText.length()) {
+            targetText.setText(fullText.substring(0, i[0] + 1));
+
+            // Suara ketik sekali per huruf
+            AudioClip clickSound = new AudioClip(soundPath);
+            clickSound.play();
+
+            i[0]++;
+        } else {
+            typing.stop();
+        }
+    }));
+
+    typing.setCycleCount(Timeline.INDEFINITE);
+    typing.play();
+}
+
+
 }

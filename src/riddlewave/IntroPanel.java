@@ -1,5 +1,6 @@
 package riddlewave;
 
+import java.io.File;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.Scene;
@@ -7,6 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.media.AudioClip;
 import javafx.scene.text.Text;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -17,7 +19,7 @@ public class IntroPanel {
     private static final String INTRO_TEXT = "Halo! Namaku Wisanggeni.\nAku akan memandumu di game Riddle Wave.\nSiapkan dirimu untuk menjawab teka-teki dari berbagai Pulau\nDi Indonesia!";
 
     public static void show(Stage stage) {
-        AnchorPane root = new AnchorPane();
+        final AnchorPane root = new AnchorPane();
 
         // Background
         ImageView bgView = new ImageView(new Image("file:resources/assets/Bg/bgwc2.png"));
@@ -34,7 +36,7 @@ public class IntroPanel {
         AnchorPane.setBottomAnchor(botView, 50.0);
 
         // Dialog Bubble
-        Text introText = new Text();
+        final Text introText = new Text(INTRO_TEXT); // diisi dulu agar bisa diakses di fungsi ketik
         introText.setFont(Font.font("Verdana", 22));
         introText.setStyle("-fx-fill: white;");
         VBox textBubble = new VBox(introText);
@@ -43,8 +45,8 @@ public class IntroPanel {
         AnchorPane.setLeftAnchor(textBubble, 305.0);
         AnchorPane.setBottomAnchor(textBubble, 280.0);
 
-        // Tombol Lanjut
-        Button lanjutBtn = new Button("Next");
+        // Tombol Next
+        final Button lanjutBtn = new Button("Next");
         lanjutBtn.setFont(Font.font(18));
         lanjutBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
         lanjutBtn.setVisible(false);
@@ -52,52 +54,62 @@ public class IntroPanel {
         AnchorPane.setBottomAnchor(lanjutBtn, 30.0);
 
         // Tombol Skip
-        Button skipBtn = new Button("Skip");
+        final Button skipBtn = new Button("Skip");
         skipBtn.setFont(Font.font(14));
         skipBtn.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: white; -fx-padding: 6px 15px;");
         AnchorPane.setTopAnchor(skipBtn, 20.0);
         AnchorPane.setRightAnchor(skipBtn, 20.0);
 
-        // Timeline efek ketik
-        Timeline typingTimeline = new Timeline();
-        final int[] index = {0};
-
-        typingTimeline.getKeyFrames().add(
-            new KeyFrame(Duration.millis(40), event -> {
-                if (index[0] < INTRO_TEXT.length()) {
-                    introText.setText(INTRO_TEXT.substring(0, index[0] + 1));
-                    index[0]++;
-                } else {
-                    typingTimeline.stop();
-                    lanjutBtn.setVisible(true);
-                    root.getChildren().remove(skipBtn);
-                }
-            })
-        );
-        typingTimeline.setCycleCount(Timeline.INDEFINITE);
-
-        // Skip: langsung tampilkan semua teks
+        // Skip → langsung tampilkan semua
         skipBtn.setOnAction(e -> {
-            typingTimeline.stop();
             introText.setText(INTRO_TEXT);
             lanjutBtn.setVisible(true);
             root.getChildren().remove(skipBtn);
         });
 
-        lanjutBtn.setOnAction(e -> {
-            MapSelectionScene.show(stage);
-        });
+        // Lanjut → ke map selection
+        lanjutBtn.setOnAction(e -> MapSelectionScene.show(stage));
 
-        // Tambahkan semua
         root.getChildren().addAll(botView, textBubble, lanjutBtn, skipBtn);
 
         // Scene
         Scene scene = new Scene(root, 1280, 720);
         scene.widthProperty().addListener((obs, oldVal, newVal) -> bgView.setFitWidth(newVal.doubleValue()));
         scene.heightProperty().addListener((obs, oldVal, newVal) -> bgView.setFitHeight(newVal.doubleValue()));
+        stage.setTitle("Welcome - Riddle Wave");
         stage.setScene(scene);
         stage.setFullScreen(true);
 
-        typingTimeline.play();
+        // Mulai efek ketik + suara
+        playTypingEffectText(introText, () -> {
+            root.getChildren().remove(skipBtn);
+            lanjutBtn.setVisible(true);
+        });
+    }
+
+    // Efek ketik + suara + callback saat selesai
+    private static void playTypingEffectText(Text targetText, Runnable onComplete) {
+        String fullText = targetText.getText();
+        targetText.setText("");
+
+        File soundFile = new File("resources/assets/audio/ketik.wav");
+        String soundPath = soundFile.toURI().toString();
+
+        Timeline typing = new Timeline();
+        final int[] i = {0};
+
+        typing.getKeyFrames().add(new KeyFrame(Duration.millis(30), ev -> {
+            if (i[0] < fullText.length()) {
+                targetText.setText(fullText.substring(0, i[0] + 1));
+                new AudioClip(soundPath).play();
+                i[0]++;
+            } else {
+                typing.stop();
+                if (onComplete != null) onComplete.run();
+            }
+        }));
+
+        typing.setCycleCount(Timeline.INDEFINITE);
+        typing.play();
     }
 }
