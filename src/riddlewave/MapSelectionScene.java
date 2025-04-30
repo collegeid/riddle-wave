@@ -20,12 +20,13 @@ import java.util.Map;
 public class MapSelectionScene {
 
     private static final String DIALOG_TEXT =
-            "Ini adalah peta provinsi Indonesia.\n" +
-            "Beberapa provinsi masih terkunci. Kamu bisa membukanya\n" +
-            "dengan menyelesaikan provinsi sebelumnya terlebih dahulu.\n" +
-            "Silakan pilih provinsi yang tersedia untuk mulai bermain!";
+        "Ini adalah peta provinsi Indonesia.\n" +
+        "Beberapa provinsi masih terkunci. Kamu bisa membukanya\n" +
+        "dengan menyelesaikan provinsi sebelumnya terlebih dahulu.\n" +
+        "Silakan pilih provinsi yang tersedia untuk mulai bermain!";
 
-    private static Text dialogText; // ❗️Supaya bisa diakses dan diubah
+    private static Text dialogText;
+    private static HBox provinceRow;
 
     public static void show(Stage stage) {
         AnchorPane root = new AnchorPane();
@@ -54,18 +55,12 @@ public class MapSelectionScene {
         AnchorPane.setLeftAnchor(dialogBubble, 250.0);
         AnchorPane.setBottomAnchor(dialogBubble, 210.0);
 
-        // Province Row
-        HBox provinceRow = new HBox(40);
+        // Province Row (scroll horizontal)
+        provinceRow = new HBox(40);
         provinceRow.setPadding(new Insets(20));
         provinceRow.setAlignment(Pos.CENTER_LEFT);
+        refreshProvinceRow();
 
-        ProvinceManager.getAllStatus().entrySet().stream()
-                .sorted((a, b) -> Boolean.compare(a.getValue(), b.getValue()))
-                .forEach(entry -> {
-                    provinceRow.getChildren().add(createProvinceItem(entry.getKey(), entry.getValue()));
-                });
-
-        // ScrollPane
         ScrollPane scrollPane = new ScrollPane(provinceRow);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -79,7 +74,6 @@ public class MapSelectionScene {
         blurLayer.setStyle("-fx-background-color: rgba(0,0,0,0.35); -fx-background-radius: 20;");
         blurLayer.setEffect(new BoxBlur(20, 20, 3));
 
-        // Stack Scroll
         StackPane scrollContainer = new StackPane();
         scrollContainer.getChildren().addAll(blurLayer, scrollPane);
         scrollContainer.setPadding(new Insets(10));
@@ -119,17 +113,18 @@ public class MapSelectionScene {
             container.getChildren().add(lockIcon);
         }
 
-      container.setOnMouseClicked(e -> {
-                if (locked) {
-                    playTypingEffect("Hehh! Provinsi ini masih terkunci.\nSelesaikan provinsi sebelumnya untuk membukanya !!!.");
-                } else {
-                    System.out.println("Provinsi dipilih: " + provinceKey);
-                    riddlewave.GameplayScene.show(
-                        (Stage) container.getScene().getWindow(),
-                        provinceKey
-                    );
-                }
-            });
+        container.setOnMouseClicked(e -> {
+            if (locked) {
+                playTypingEffect("Hehh! Provinsi ini masih terkunci.\nSelesaikan provinsi sebelumnya untuk membukanya !!!.");
+            } else {
+                System.out.println("Provinsi dipilih: " + provinceKey);
+                riddlewave.GameplayScene.show(
+                    (Stage) container.getScene().getWindow(),
+                    provinceKey
+                );
+            }
+        });
+
         return container;
     }
 
@@ -147,5 +142,16 @@ public class MapSelectionScene {
         }));
         typing.setCycleCount(Timeline.INDEFINITE);
         typing.play();
+    }
+
+    // ⏳ Refresh status provinsi dari file properties
+    private static void refreshProvinceRow() {
+        provinceRow.getChildren().clear();
+        Map<String, Boolean> updatedStatus = ProvinceManager.getAllStatus();
+        updatedStatus.entrySet().stream()
+            .sorted((a, b) -> Boolean.compare(a.getValue(), b.getValue()))
+            .forEach(entry -> {
+                provinceRow.getChildren().add(createProvinceItem(entry.getKey(), entry.getValue()));
+            });
     }
 }

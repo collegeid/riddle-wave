@@ -34,6 +34,7 @@ public class GameplayScene {
     private static VBox questionBox;
     private static ImageView jumpscareImage;
     private static VBox dialogBubble;
+    private static AnchorPane rootPane;
 
     private static List<Question> questions;
 
@@ -41,7 +42,8 @@ public class GameplayScene {
         currentIndex = 0;
         lives = MAX_LIVES;
 
-        AnchorPane root = new AnchorPane();
+        rootPane = new AnchorPane(); // simpan root pane
+        AnchorPane root = rootPane;
 
         // Background
         String bgPath = "file:resources/assets/Bg/" + provinceName.toLowerCase() + ".png";
@@ -130,75 +132,96 @@ public class GameplayScene {
         stage.setFullScreen(true);
     }
 
-    private static void showNextQuestion(Stage stage, String provinceName) {
-      if (currentIndex >= questions.size()) {
-            dialogText.setText("Kamu berhasil! Provinsi selanjutnya terbuka.");
+   private static void showNextQuestion(Stage stage, String provinceName) {
+    if (currentIndex >= questions.size()) {
+        timerLabel.setVisible(false);
+        lifeBox.setVisible(false);
+        // Unlock provinsi
+        ProvinceManager.unlockNext(provinceName);
 
-            // ✅ Tampilkan kembali bot dan dialog
-            dialogBubble.setVisible(true);
-            dialogBubble.toFront(); // Pastikan dialog muncul di atas
-            lifeBox.toFront();
-            timerLabel.toFront();
-            questionBox.setVisible(false);
+        // Sembunyikan soal
+        questionBox.setVisible(false);
 
-            ImageView bot = new ImageView(new Image("file:resources/assets/Karakter/Wisanggeni.png"));
-            bot.setFitHeight(350);
-            bot.setPreserveRatio(true);
-            AnchorPane.setLeftAnchor(bot, 30.0);
-            AnchorPane.setBottomAnchor(bot, 30.0);
+        // Langsung isi teks, tanpa animasi typing
+        dialogText.setText("Keren! Kamu berhasil menyelesaikan provinsi ini.");
+        dialogBubble.setVisible(true);
 
-            ((AnchorPane) dialogBubble.getParent()).getChildren().add(bot);
+        // Tambahkan kembali bot Wisanggeni jika belum ada
+        ImageView newBot = new ImageView(new Image("file:resources/assets/Karakter/Wisanggeni.png"));
+        newBot.setFitHeight(450);
+        newBot.setPreserveRatio(true);
+        AnchorPane.setLeftAnchor(newBot, 50.0);
+        AnchorPane.setBottomAnchor(newBot, 50.0);
 
-            ProvinceManager.unlockNext(provinceName);
-
-            PauseTransition delay = new PauseTransition(Duration.seconds(4));
-            delay.setOnFinished(e -> MapSelectionScene.show(stage));
-            delay.play();
-            return;
+        if (!rootPane.getChildren().contains(newBot)) {
+            rootPane.getChildren().add(newBot);
         }
 
+        // Tambahkan tombol kembali ke map
+        Button backBtn = new Button("Kembali ke Map");
+        backBtn.setFont(Font.font(18));
+        AnchorPane.setBottomAnchor(backBtn, 40.0);
+        AnchorPane.setRightAnchor(backBtn, 40.0);
+        backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
+        backBtn.setOnAction(e -> MapSelectionScene.show(stage));
 
-        Question q = questions.get(currentIndex);
-        questionBox.getChildren().clear();
+        VBox finishBox = new VBox(20, dialogBubble, backBtn);
+        finishBox.setAlignment(Pos.CENTER);
 
-        Label qLabel = new Label(q.getText());
-        qLabel.setStyle(
-            "-fx-background-color: rgba(0, 0, 0, 0.7);" +
-            "-fx-text-fill: white;" +
-            "-fx-padding: 15px;" +
-            "-fx-background-radius: 15;" +
-            "-fx-font-size: 22px;"
-        );
-        qLabel.setWrapText(true);
-        qLabel.setFont(Font.font("Arial", 24));
-        questionBox.getChildren().add(qLabel);
+        AnchorPane.setBottomAnchor(finishBox, 100.0);
+        AnchorPane.setLeftAnchor(finishBox, 360.0); // Sesuaikan posisi tengah
 
-        String[] opts = q.getOptions();
-        for (int i = 0; i < opts.length; i++) {
-            char optChar = (char) ('A' + i);
-            String label = optChar + ". " + opts[i];
-            Button optBtn = new Button(label);
-            optBtn.setMaxWidth(Double.MAX_VALUE);
-            optBtn.setStyle(
-                "-fx-background-color: rgba(255, 255, 255, 0.25);" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 18px;" +
-                "-fx-background-radius: 20;" +
-                "-fx-padding: 12px 20px;" +
-                "-fx-border-color: white;" +
-                "-fx-border-width: 1px;"
-            );
-            int finalI = i;
-            optBtn.setOnMouseEntered(ev -> optBtn.setStyle("-fx-background-color: rgba(255,255,255,0.4); -fx-text-fill: black; -fx-font-size: 18px; -fx-background-radius: 15; -fx-padding: 10px;"));
-            optBtn.setOnMouseExited(ev -> optBtn.setStyle("-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-size: 18px; -fx-background-radius: 15; -fx-padding: 10px;"));            optBtn.setOnAction(e -> {
-                timer.stop();
-                checkAnswer(stage, q, String.valueOf(optChar), provinceName);
-            });
-            questionBox.getChildren().add(optBtn);
+        if (!rootPane.getChildren().contains(finishBox)) {
+            rootPane.getChildren().add(finishBox);
         }
 
-        resetTimer(stage, q, provinceName);
+        return;
     }
+
+    // Tampilkan pertanyaan berikutnya
+    Question q = questions.get(currentIndex);
+    questionBox.getChildren().clear();
+
+    Label qLabel = new Label(q.getText());
+    qLabel.setStyle(
+        "-fx-background-color: rgba(0, 0, 0, 0.7);" +
+        "-fx-text-fill: white;" +
+        "-fx-padding: 15px;" +
+        "-fx-background-radius: 15;" +
+        "-fx-font-size: 22px;"
+    );
+    qLabel.setWrapText(true);
+    qLabel.setFont(Font.font("Arial", 24));
+    questionBox.getChildren().add(qLabel);
+
+    String[] opts = q.getOptions();
+    for (int i = 0; i < opts.length; i++) {
+        char optChar = (char) ('A' + i);
+        String label = optChar + ". " + opts[i];
+        Button optBtn = new Button(label);
+        optBtn.setMaxWidth(Double.MAX_VALUE);
+        optBtn.setStyle(
+            "-fx-background-color: rgba(255, 255, 255, 0.25);" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 18px;" +
+            "-fx-background-radius: 20;" +
+            "-fx-padding: 12px 20px;" +
+            "-fx-border-color: white;" +
+            "-fx-border-width: 1px;"
+        );
+        int finalI = i;
+        optBtn.setOnMouseEntered(ev -> optBtn.setStyle("-fx-background-color: rgba(255,255,255,0.4); -fx-text-fill: black;"));
+        optBtn.setOnMouseExited(ev -> optBtn.setStyle("-fx-background-color: rgba(255,255,255,0.25); -fx-text-fill: white;"));
+        optBtn.setOnAction(e -> {
+            timer.stop();
+            checkAnswer(stage, q, String.valueOf(optChar), provinceName);
+        });
+        questionBox.getChildren().add(optBtn);
+    }
+
+    resetTimer(stage, q, provinceName);
+}
+
 
     private static void checkAnswer(Stage stage, Question q, String chosen, String provinceName) {
         if (!q.getCorrectAnswer().equalsIgnoreCase(chosen)) {
@@ -254,6 +277,8 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
     jumpscareImage.setTranslateY(100); // vertikal tetap
 
     if (isGameOver) {
+        timerLabel.setVisible(false);
+        lifeBox.setVisible(false);
         // Teks game over
         Text gameOverText = new Text("Yahh... nyawamu habis. Game Over!");
         gameOverText.setFont(Font.font("Verdana", 20));
@@ -266,6 +291,8 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
         // Tombol kembali ke map
         Button backBtn = new Button("Kembali ke Map");
         backBtn.setFont(Font.font(18));
+        AnchorPane.setBottomAnchor(backBtn, 40.0);
+        AnchorPane.setRightAnchor(backBtn, 40.0);
         backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
         backBtn.setOnAction(ev -> MapSelectionScene.show(stage));
 
