@@ -101,25 +101,26 @@ public class GameplayScene {
 
         // Tombol mulai
         Button mulaiBtn = new Button("Mulai");
+        mulaiBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
         mulaiBtn.setFont(Font.font(18));
         AnchorPane.setBottomAnchor(mulaiBtn, 40.0);
         AnchorPane.setRightAnchor(mulaiBtn, 40.0);
-      mulaiBtn.setOnAction(e -> {
-        root.getChildren().remove(mulaiBtn);
-        root.getChildren().remove(bot);
-        root.getChildren().remove(dialogBubble);
-        updateHearts(); // ✅ Tambahkan ini
-        showNextQuestion(stage, provinceName);
-      });
+        mulaiBtn.setOnAction(e -> {
+          root.getChildren().remove(mulaiBtn);
+          root.getChildren().remove(bot);
+          root.getChildren().remove(dialogBubble);
+          updateHearts(); // ✅ Tambahkan ini
+          showNextQuestion(stage, provinceName);
+        });
 
 
         // Jumpscare
         jumpscareImage = new ImageView(new Image("file:resources/assets/Karakter/Monster3.png"));
-        jumpscareImage.setFitHeight(720);
+        jumpscareImage.setFitHeight(500);
         jumpscareImage.setPreserveRatio(true);
         jumpscareImage.setVisible(false);
-        AnchorPane.setLeftAnchor(jumpscareImage, (1280.0 - 720.0) / 2); // Centered approx
-        AnchorPane.setTopAnchor(jumpscareImage, 0.0);
+        AnchorPane.setLeftAnchor(jumpscareImage, 390.0);
+        AnchorPane.setTopAnchor(jumpscareImage, 90.0);
 
 
         // Add all
@@ -130,14 +131,32 @@ public class GameplayScene {
     }
 
     private static void showNextQuestion(Stage stage, String provinceName) {
-        if (currentIndex >= questions.size()) {
+      if (currentIndex >= questions.size()) {
             dialogText.setText("Kamu berhasil! Provinsi selanjutnya terbuka.");
+
+            // ✅ Tampilkan kembali bot dan dialog
+            dialogBubble.setVisible(true);
+            dialogBubble.toFront(); // Pastikan dialog muncul di atas
+            lifeBox.toFront();
+            timerLabel.toFront();
+            questionBox.setVisible(false);
+
+            ImageView bot = new ImageView(new Image("file:resources/assets/Karakter/Wisanggeni.png"));
+            bot.setFitHeight(350);
+            bot.setPreserveRatio(true);
+            AnchorPane.setLeftAnchor(bot, 30.0);
+            AnchorPane.setBottomAnchor(bot, 30.0);
+
+            ((AnchorPane) dialogBubble.getParent()).getChildren().add(bot);
+
             ProvinceManager.unlockNext(provinceName);
+
             PauseTransition delay = new PauseTransition(Duration.seconds(4));
             delay.setOnFinished(e -> MapSelectionScene.show(stage));
             delay.play();
             return;
         }
+
 
         Question q = questions.get(currentIndex);
         questionBox.getChildren().clear();
@@ -225,30 +244,50 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
     questionBox.setVisible(false);
     jumpscareImage.setVisible(true);
     dialogBubble.setVisible(true);
-    dialogText.setText(msg);
-    playTypingEffect(msg);
+    dialogText.setText(""); // Kosongkan dulu untuk efek ketik
 
+    // Atur posisi jumpscare ke tengah
+    AnchorPane.setLeftAnchor(jumpscareImage, null);
+    AnchorPane.setRightAnchor(jumpscareImage, null);
+    AnchorPane.setTopAnchor(jumpscareImage, null);
+    AnchorPane.setBottomAnchor(jumpscareImage, null);
+    AnchorPane.setTopAnchor(jumpscareImage, 100.0);
+    AnchorPane.setLeftAnchor(jumpscareImage, 400.0);
 
-    PauseTransition wait = new PauseTransition(Duration.seconds(5));
-    wait.setOnFinished(e -> {
-        jumpscareImage.setVisible(false);
-        if (isGameOver) {
-            dialogText.setText("Yahh... kamu kalah. Coba lagi ya!");
-            Button backBtn = new Button("Kembali ke Map");
-            backBtn.setFont(Font.font(18));
-            backBtn.setOnAction(ev -> MapSelectionScene.show(stage));
-            questionBox.getChildren().clear();
-            questionBox.getChildren().add(backBtn);
-            questionBox.setVisible(true);
-        } else {
-            dialogBubble.setVisible(true);
+    // Atur posisi bubble agar muncul juga di tengah bawah
+    AnchorPane.setLeftAnchor(dialogBubble, 340.0);
+    AnchorPane.setBottomAnchor(dialogBubble, 180.0);
+
+    playTypingEffect(msg); // Efek ketik untuk dialog bubble
+
+    if (isGameOver) {
+        // Jika game over: biarkan monster tetap tampil dan munculkan tombol kembali
+        Button backBtn = new Button("Kembali ke Map");
+        backBtn.setFont(Font.font(18));
+        backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
+        backBtn.setOnAction(ev -> MapSelectionScene.show(stage));
+
+        VBox gameOverBox = new VBox(20, dialogBubble, backBtn);
+        gameOverBox.setAlignment(Pos.CENTER);
+        AnchorPane.setLeftAnchor(gameOverBox, 440.0);
+        AnchorPane.setBottomAnchor(gameOverBox, 100.0);
+
+        ((AnchorPane) dialogBubble.getParent()).getChildren().add(gameOverBox);
+    } else {
+        // Jika hanya salah atau waktu habis, delay 5 detik lalu lanjut
+        PauseTransition wait = new PauseTransition(Duration.seconds(5));
+        wait.setOnFinished(e -> {
+            jumpscareImage.setVisible(false);
+            dialogBubble.setVisible(false);
             questionBox.setVisible(true);
             currentIndex++;
             showNextQuestion(stage, provinceName);
-        }
-    });
-    wait.play();
+        });
+        wait.play();
+    }
 }
+
+
 
     private static void updateHearts() {
         lifeBox.getChildren().clear();

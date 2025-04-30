@@ -47,7 +47,7 @@ public class IntroPanel {
         // Tombol Lanjut
         Button lanjutBtn = new Button("Next");
         lanjutBtn.setFont(Font.font(18));
-        lanjutBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        lanjutBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
         lanjutBtn.setVisible(false);
         AnchorPane.setRightAnchor(lanjutBtn, 30.0);
         AnchorPane.setBottomAnchor(lanjutBtn, 30.0);
