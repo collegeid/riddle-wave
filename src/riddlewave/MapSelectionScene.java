@@ -122,45 +122,67 @@ public class MapSelectionScene {
 
         //playTypingEffect(DIALOG_TEXT);
     }
+private static final Map<String, String> DISPLAY_NAMES = Map.of(
+    "Sumatera", "Sumatera",
+    "Java", "Jawa",
+    "Bali", "Bali",
+    "Nusa", "Nusa Tenggara",
+    "Kalimantan", "Kalimantan",
+    "Sulawesi", "Sulawesi",
+    "Maluku", "Maluku",
+    "Papua", "Papua"
+);
 
- private static StackPane createProvinceItem(String provinceKey, boolean locked, boolean showChecklist) {
-        StackPane container = new StackPane();
-        container.setAlignment(Pos.CENTER);
+private static StackPane createProvinceItem(String provinceKey, boolean locked, boolean showChecklist) {
+    VBox itemBox = new VBox(5); // Spasi vertikal antara gambar dan label
+    itemBox.setAlignment(Pos.CENTER);
 
-        ImageView provinceImage = new ImageView(new Image("file:resources/assets/Peta/" + provinceKey + ".png"));
-        provinceImage.setFitWidth(200);
-        provinceImage.setPreserveRatio(true);
-        container.getChildren().add(provinceImage);
+    StackPane container = new StackPane();
+    container.setAlignment(Pos.CENTER);
 
-        if (locked) {
-            ImageView lockIcon = new ImageView(new Image("file:resources/assets/Gembok/lock.png"));
-            lockIcon.setFitWidth(48);
-            lockIcon.setPreserveRatio(true);
-            container.getChildren().add(lockIcon);
-        }
-        
-        if (showChecklist) {
-            ImageView checklistIcon = new ImageView(new Image("file:resources/assets/UI/check.png"));
-            checklistIcon.setFitWidth(48);
-            checklistIcon.setPreserveRatio(true);
-            container.getChildren().add(checklistIcon);
-        }
+    ImageView provinceImage = new ImageView(new Image("file:resources/assets/Peta/" + provinceKey + ".png"));
+    provinceImage.setFitWidth(200);
+    provinceImage.setPreserveRatio(true);
+    container.getChildren().add(provinceImage);
 
-
-        container.setOnMouseClicked(e -> {
-            if (locked) {
-                playTypingEffect("Hehh! Pulau " + provinceKey + " ini masih terkunci.\nSelesaikan Pulau sebelumnya untuk membukanya !!!.");
-            } else {
-                System.out.println("Provinsi dipilih: " + provinceKey);
-                riddlewave.GameplayScene.show(
-                    (Stage) container.getScene().getWindow(),
-                    provinceKey
-                );
-            }
-        });
-
-        return container;
+    if (locked) {
+        ImageView lockIcon = new ImageView(new Image("file:resources/assets/Gembok/lock.png"));
+        lockIcon.setFitWidth(48);
+        lockIcon.setPreserveRatio(true);
+        container.getChildren().add(lockIcon);
     }
+
+    if (showChecklist) {
+        ImageView checklistIcon = new ImageView(new Image("file:resources/assets/UI/check.png"));
+        checklistIcon.setFitWidth(42);
+        checklistIcon.setPreserveRatio(true);
+        StackPane.setAlignment(checklistIcon, Pos.CENTER); // ⬅️ Tengah gambar
+        container.getChildren().add(checklistIcon);
+    }
+
+    // Label di bawah gambar
+    Text label = new Text(DISPLAY_NAMES.getOrDefault(provinceKey, provinceKey));
+    label.setFont(Font.font("Verdana", 16));
+    label.setStyle("-fx-fill: white;");
+
+    itemBox.getChildren().addAll(container, label);
+
+    // Event klik
+    container.setOnMouseClicked(e -> {
+        if (locked) {
+            playTypingEffect("Hehh! Pulau " + DISPLAY_NAMES.getOrDefault(provinceKey, provinceKey) +
+                " ini masih terkunci.\nSelesaikan Pulau sebelumnya untuk membukanya !!!.");
+        } else {
+            System.out.println("Provinsi dipilih: " + provinceKey);
+            riddlewave.GameplayScene.show(
+                (Stage) container.getScene().getWindow(),
+                provinceKey
+            );
+        }
+    });
+
+    return new StackPane(itemBox);
+}
 
     private static void playTypingEffect(String text) {
         Timeline typing = new Timeline();
@@ -214,7 +236,7 @@ private static void refreshProvinceRow() {
     if (unlockedCount == orderedKeys.length) {
         playTypingEffect("Selamat! Kamu telah menamatkan semua provinsi.\nSilakan bermain ulang kapan saja!");
     } else if (latestUnlocked != null && unlockedCount > 1) {
-        playTypingEffect("Selamat! Kamu telah membuka pulau " + latestUnlocked + ".\nSilakan klik gambar pulau tersebut untuk bermain\natau kamu dapat memainkan kembali Pulau - Pulau yang sudah berhasil kamu lewati sebelumnya !");
+        playTypingEffect("Selamat! Kamu telah membuka pulau " + latestUnlocked + ".\nSilakan klik gambar pulau tersebut untuk bermain\natau kamu dapat memainkan kembali Pulau - Pulau\nyang sudah berhasil kamu lewati sebelumnya !");
     } else {
         playTypingEffect(DIALOG_TEXT);
     }
