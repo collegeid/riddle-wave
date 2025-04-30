@@ -119,15 +119,17 @@ public class MapSelectionScene {
             container.getChildren().add(lockIcon);
         }
 
-        container.setOnMouseClicked(e -> {
-            if (locked) {
-                playTypingEffect("Hehh! Provinsi ini masih terkunci.\nSelesaikan provinsi sebelumnya untuk membukanya !!!.");
-            } else {
-                System.out.println("Provinsi dipilih: " + provinceKey);
-                // TODO: lanjut ke scene gameplay
-            }
-        });
-
+      container.setOnMouseClicked(e -> {
+                if (locked) {
+                    playTypingEffect("Hehh! Provinsi ini masih terkunci.\nSelesaikan provinsi sebelumnya untuk membukanya !!!.");
+                } else {
+                    System.out.println("Provinsi dipilih: " + provinceKey);
+                    riddlewave.GameplayScene.show(
+                        (Stage) container.getScene().getWindow(),
+                        provinceKey
+                    );
+                }
+            });
         return container;
     }
 
