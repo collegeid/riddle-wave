@@ -243,37 +243,53 @@ public class GameplayScene {
 private static void showJumpscare(Stage stage, String msg, boolean isGameOver, String provinceName) {
     questionBox.setVisible(false);
     jumpscareImage.setVisible(true);
-    dialogBubble.setVisible(true);
-    dialogText.setText(""); // Kosongkan dulu untuk typing effect
-    playTypingEffect(msg);
 
-    // Pusatkan jumpscare
-    AnchorPane.setLeftAnchor(jumpscareImage, null);
-    AnchorPane.setRightAnchor(jumpscareImage, null);
-    AnchorPane.setTopAnchor(jumpscareImage, null);
-    AnchorPane.setBottomAnchor(jumpscareImage, null);
-    AnchorPane.setTopAnchor(jumpscareImage, 100.0);
-    AnchorPane.setLeftAnchor(jumpscareImage, 400.0); // sesuaikan jika perlu
+    Scene scene = stage.getScene();
+
+    // Reset anchor
+    AnchorPane.clearConstraints(jumpscareImage);
+
+    // Posisikan jumpscare monster ke tengah adaptif
+    jumpscareImage.translateXProperty().bind(scene.widthProperty().subtract(jumpscareImage.fitWidthProperty()).divide(2));
+    jumpscareImage.setTranslateY(100); // vertikal tetap
 
     if (isGameOver) {
-        // Jika game over, jangan sembunyikan jumpscare
-        questionBox.getChildren().clear();
+        // Teks game over
+        Text gameOverText = new Text("Yahh... nyawamu habis. Game Over!");
+        gameOverText.setFont(Font.font("Verdana", 20));
+        gameOverText.setStyle("-fx-fill: white;");
 
-        // Tambahkan tombol kembali ke map
+        VBox gameOverBubble = new VBox(gameOverText);
+        gameOverBubble.setStyle("-fx-background-color: rgba(0,0,0,0.8); -fx-padding: 20px; -fx-background-radius: 15;");
+        gameOverBubble.setAlignment(Pos.CENTER);
+
+        // Tombol kembali ke map
         Button backBtn = new Button("Kembali ke Map");
         backBtn.setFont(Font.font(18));
         backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
         backBtn.setOnAction(ev -> MapSelectionScene.show(stage));
 
-        VBox gameOverBox = new VBox(20, dialogBubble, backBtn);
-        gameOverBox.setAlignment(Pos.CENTER);
-        AnchorPane.setBottomAnchor(gameOverBox, 100.0);
-        AnchorPane.setLeftAnchor(gameOverBox, 500.0); // sesuaikan posisi
+        VBox container = new VBox(20, gameOverBubble, backBtn);
+        container.setAlignment(Pos.CENTER);
 
-        questionBox.getChildren().add(gameOverBox);
-        questionBox.setVisible(true);
+        // Buat wrapper supaya bisa adaptif pakai StackPane-like behavior
+        StackPane.setAlignment(container, Pos.BOTTOM_CENTER);
+
+        // Tambah ke root
+        ((AnchorPane) jumpscareImage.getParent()).getChildren().add(container);
+        AnchorPane.setBottomAnchor(container, 80.0);
+        AnchorPane.setLeftAnchor(container, (scene.getWidth() - 600) / 2); // estimasi center
     } else {
-        // Kalau bukan game over, delay 5 detik lalu lanjut
+        // Tampilkan bubble dialog kesalahan
+        dialogBubble.setVisible(true);
+        dialogText.setText("");
+        playTypingEffect(msg);
+
+        // Posisikan dialog bubble adaptif di tengah bawah
+        AnchorPane.setLeftAnchor(dialogBubble, (scene.getWidth() - 600) / 2); // estimasi tengah
+        AnchorPane.setBottomAnchor(dialogBubble, 180.0);
+
+        // Lanjutkan setelah 5 detik
         PauseTransition wait = new PauseTransition(Duration.seconds(5));
         wait.setOnFinished(e -> {
             jumpscareImage.setVisible(false);
@@ -285,6 +301,7 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
         wait.play();
     }
 }
+
 
 
     private static void updateHearts() {
