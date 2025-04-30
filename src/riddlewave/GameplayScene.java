@@ -31,27 +31,28 @@ public class GameplayScene {
     private static HBox lifeBox;
     private static Text dialogText;
     private static VBox questionBox;
+    private static ImageView jumpscareImg;
 
     private static List<Question> questions;
 
     public static void show(Stage stage, String provinceName) {
         AnchorPane root = new AnchorPane();
 
-        // === Background ===
+        // Background
         ImageView bg = new ImageView(new Image("file:resources/assets/Bg/bg_game_jawa.png"));
         bg.setFitWidth(1920);
         bg.setFitHeight(1080);
         bg.setPreserveRatio(false);
         root.getChildren().add(bg);
 
-        // === Bot Image ===
+        // Bot
         ImageView bot = new ImageView(new Image("file:resources/assets/Karakter/Wisanggeni.png"));
         bot.setFitHeight(350);
         bot.setPreserveRatio(true);
         AnchorPane.setLeftAnchor(bot, 30.0);
         AnchorPane.setBottomAnchor(bot, 30.0);
 
-        // === Dialog Text Bubble ===
+        // Dialog Bubble
         dialogText = new Text();
         dialogText.setFont(Font.font("Verdana", 20));
         dialogText.setStyle("-fx-fill: white;");
@@ -61,17 +62,17 @@ public class GameplayScene {
         AnchorPane.setLeftAnchor(bubble, 300.0);
         AnchorPane.setBottomAnchor(bubble, 200.0);
 
-        // === Timer Label ===
+        // Timer
         timerLabel = new Label();
         timerLabel.setFont(Font.font("Arial", 26));
         timerLabel.setStyle("-fx-text-fill: white;");
         AnchorPane.setTopAnchor(timerLabel, 20.0);
         AnchorPane.setRightAnchor(timerLabel, 40.0);
 
-        // === Life Display ===
+        // Nyawa
         lifeBox = new HBox(10);
         for (int i = 0; i < MAX_LIVES; i++) {
-            ImageView heart = new ImageView(new Image("file:resources/assets/Nyawa/heart.png"));
+            ImageView heart = new ImageView(new Image("file:resources/assets/UI/heart.png"));
             heart.setFitWidth(30);
             heart.setPreserveRatio(true);
             lifeBox.getChildren().add(heart);
@@ -79,30 +80,37 @@ public class GameplayScene {
         AnchorPane.setTopAnchor(lifeBox, 20.0);
         AnchorPane.setLeftAnchor(lifeBox, 40.0);
 
-        // === Question + Options Area ===
+        // Soal
         questionBox = new VBox(20);
         questionBox.setAlignment(Pos.CENTER);
         questionBox.setPadding(new Insets(20));
-        AnchorPane.setBottomAnchor(questionBox, 100.0);
+        AnchorPane.setTopAnchor(questionBox, 250.0);
         AnchorPane.setLeftAnchor(questionBox, 350.0);
         AnchorPane.setRightAnchor(questionBox, 350.0);
 
-        // === Load Soal & Narasi ===
+        // Jumpscare (overlay hidden)
+        jumpscareImg = new ImageView(new Image("file:resources/assets/Karakter/jumpscare.png"));
+        jumpscareImg.setFitWidth(1280);
+        jumpscareImg.setPreserveRatio(true);
+        jumpscareImg.setVisible(false);
+        root.getChildren().add(jumpscareImg);
+
+        // Load Narasi dan Soal
         questions = QuestionManager.loadQuestions(provinceName);
         String narasi = QuestionManager.loadNarration(provinceName);
-        dialogText.setText(narasi);
+        playTypingEffect(narasi);
 
-        // === Tombol Mulai ===
+        // Tombol Mulai
         Button mulaiBtn = new Button("Mulai");
         mulaiBtn.setFont(Font.font(20));
-        mulaiBtn.setOnAction(e -> {
-            root.getChildren().remove(mulaiBtn);
-            showNextQuestion(stage, provinceName);
-        });
         AnchorPane.setBottomAnchor(mulaiBtn, 40.0);
         AnchorPane.setRightAnchor(mulaiBtn, 40.0);
 
-        // === Assemble ===
+        mulaiBtn.setOnAction(e -> {
+            root.getChildren().removeAll(bot, bubble, mulaiBtn);
+            showNextQuestion(stage, provinceName);
+        });
+
         root.getChildren().addAll(bot, bubble, timerLabel, lifeBox, questionBox, mulaiBtn);
 
         Scene scene = new Scene(root, 1280, 720);
@@ -112,8 +120,8 @@ public class GameplayScene {
 
     private static void showNextQuestion(Stage stage, String provinceName) {
         if (currentIndex >= questions.size()) {
-            dialogText.setText("Kamu berhasil! Provinsi selanjutnya terbuka.");
-            ProvinceManager.unlock(provinceName); // Unlock berikutnya
+            dialogText.setText("Kamu berhasil menyelesaikan provinsi ini!");
+            ProvinceManager.unlock(provinceName);
             return;
         }
 
@@ -146,6 +154,7 @@ public class GameplayScene {
         if (!q.getCorrectAnswer().equalsIgnoreCase(chosen)) {
             lives--;
             dialogText.setText("Jawaban salah! Nyawamu berkurang.");
+            showJumpscare();
             updateHearts();
         } else {
             dialogText.setText("Bagus! Jawabanmu benar.");
@@ -163,12 +172,12 @@ public class GameplayScene {
 
     private static void resetTimer(Stage stage, Question q, String provinceName) {
         timeLeft = TIME_PER_QUESTION;
-        timerLabel.setText("⏱ " + timeLeft + " detik");
+        timerLabel.setText(timeLeft + " detik");
         if (timer != null) timer.stop();
 
         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             timeLeft--;
-            timerLabel.setText("⏱ " + timeLeft + " detik");
+            timerLabel.setText(timeLeft + " detik");
 
             if (timeLeft <= 0) {
                 timer.stop();
@@ -192,10 +201,32 @@ public class GameplayScene {
     private static void updateHearts() {
         lifeBox.getChildren().clear();
         for (int i = 0; i < lives; i++) {
-            ImageView heart = new ImageView(new Image("file:resources/assets/UI/heart.png"));
+            ImageView heart = new ImageView(new Image("file:resources/assets/Nyawa/heart.png"));
             heart.setFitWidth(30);
             heart.setPreserveRatio(true);
             lifeBox.getChildren().add(heart);
         }
+    }
+
+    private static void playTypingEffect(String fullText) {
+        Timeline typing = new Timeline();
+        final int[] i = {0};
+        typing.getKeyFrames().add(new KeyFrame(Duration.millis(35), ev -> {
+            if (i[0] < fullText.length()) {
+                dialogText.setText(fullText.substring(0, i[0] + 1));
+                i[0]++;
+            } else {
+                typing.stop();
+            }
+        }));
+        typing.setCycleCount(Timeline.INDEFINITE);
+        typing.play();
+    }
+
+    private static void showJumpscare() {
+        jumpscareImg.setVisible(true);
+        Timeline hide = new Timeline(new KeyFrame(Duration.seconds(1), ev -> jumpscareImg.setVisible(false)));
+        hide.setCycleCount(1);
+        hide.play();
     }
 }
