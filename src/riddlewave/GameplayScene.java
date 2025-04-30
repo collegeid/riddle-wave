@@ -118,11 +118,12 @@ public class GameplayScene {
 
         // Jumpscare
         jumpscareImage = new ImageView(new Image("file:resources/assets/Karakter/Monster3.png"));
-        jumpscareImage.setFitHeight(500);
+        jumpscareImage.setFitHeight(450);
         jumpscareImage.setPreserveRatio(true);
         jumpscareImage.setVisible(false);
-        AnchorPane.setLeftAnchor(jumpscareImage, 390.0);
-        AnchorPane.setTopAnchor(jumpscareImage, 90.0);
+  
+        AnchorPane.setLeftAnchor(jumpscareImage, 150.0);
+        AnchorPane.setTopAnchor(jumpscareImage, 200.0);
 
 
         // Add all
@@ -200,19 +201,40 @@ public class GameplayScene {
         String label = optChar + ". " + opts[i];
         Button optBtn = new Button(label);
         optBtn.setMaxWidth(Double.MAX_VALUE);
-        optBtn.setStyle(
+       optBtn.setStyle(
             "-fx-background-color: rgba(255, 255, 255, 0.25);" +
             "-fx-text-fill: white;" +
             "-fx-font-size: 18px;" +
-            "-fx-background-radius: 20;" +
+            "-fx-background-radius: 15;" +
             "-fx-padding: 12px 20px;" +
             "-fx-border-color: white;" +
-            "-fx-border-width: 1px;"
+            "-fx-border-width: 1px;" +
+            "-fx-cursor: hand;"
         );
         int finalI = i;
-        optBtn.setOnMouseEntered(ev -> optBtn.setStyle("-fx-background-color: rgba(255,255,255,0.4); -fx-text-fill: black;"));
-        optBtn.setOnMouseExited(ev -> optBtn.setStyle("-fx-background-color: rgba(255,255,255,0.25); -fx-text-fill: white;"));
-        optBtn.setOnAction(e -> {
+            // Hover effect tanpa mengubah padding atau font-size
+            optBtn.setOnMouseEntered(ev -> optBtn.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.5);" +
+                "-fx-text-fill: black;" +
+                "-fx-font-size: 18px;" +
+                "-fx-background-radius: 15;" +
+                "-fx-padding: 12px 20px;" +
+                "-fx-border-color: white;" +
+                "-fx-border-width: 1px;" +
+                "-fx-cursor: hand;"
+            ));       
+            optBtn.setOnMouseExited(ev -> optBtn.setStyle(
+                "-fx-background-color: rgba(255,255,255,0.25);" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 18px;" +
+                "-fx-background-radius: 15;" +
+                "-fx-padding: 12px 20px;" +
+                "-fx-border-color: white;" +
+                "-fx-border-width: 1px;" +
+                "-fx-cursor: hand;"
+            ));
+            optBtn.setPrefWidth(600);
+            optBtn.setOnAction(e -> {
             timer.stop();
             checkAnswer(stage, q, String.valueOf(optChar), provinceName);
         });
@@ -267,56 +289,54 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
     questionBox.setVisible(false);
     jumpscareImage.setVisible(true);
 
-    Scene scene = stage.getScene();
-
-    // Reset anchor
+    // Hapus constraints sebelumnya agar posisi baru tidak bentrok
     AnchorPane.clearConstraints(jumpscareImage);
 
-    // Posisikan jumpscare monster ke tengah adaptif
-    jumpscareImage.translateXProperty().bind(scene.widthProperty().subtract(jumpscareImage.fitWidthProperty()).divide(2));
-    jumpscareImage.setTranslateY(100); // vertikal tetap
+    // Posisikan monster di pojok kanan bawah
+    AnchorPane.setRightAnchor(jumpscareImage, 80.0);
+    AnchorPane.setBottomAnchor(jumpscareImage, 80.0);
 
     if (isGameOver) {
         timerLabel.setVisible(false);
         lifeBox.setVisible(false);
-        // Teks game over
-        Text gameOverText = new Text("Yahh... nyawamu habis. Game Over!");
+
+        // Buat dialog teks
+        Text gameOverText = new Text(msg);
         gameOverText.setFont(Font.font("Verdana", 20));
         gameOverText.setStyle("-fx-fill: white;");
 
         VBox gameOverBubble = new VBox(gameOverText);
-        gameOverBubble.setStyle("-fx-background-color: rgba(0,0,0,0.8); -fx-padding: 20px; -fx-background-radius: 15;");
-        gameOverBubble.setAlignment(Pos.CENTER);
+        gameOverBubble.setStyle("-fx-background-color: rgba(0,0,0,0.8); -fx-padding: 18px; -fx-background-radius: 15;");
+        gameOverBubble.setAlignment(Pos.CENTER_LEFT);
 
-        // Tombol kembali ke map
+        // Tombol kembali
         Button backBtn = new Button("Kembali ke Map");
-        backBtn.setFont(Font.font(18));
-        AnchorPane.setBottomAnchor(backBtn, 40.0);
-        AnchorPane.setRightAnchor(backBtn, 40.0);
-        backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
+        backBtn.setFont(Font.font(16));
+        backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 8px 16px;");
         backBtn.setOnAction(ev -> MapSelectionScene.show(stage));
 
-        VBox container = new VBox(20, gameOverBubble, backBtn);
-        container.setAlignment(Pos.CENTER);
+        VBox container = new VBox(10, gameOverBubble, backBtn);
+        container.setAlignment(Pos.CENTER_LEFT);
+        container.setMaxWidth(300);
 
-        // Buat wrapper supaya bisa adaptif pakai StackPane-like behavior
-        StackPane.setAlignment(container, Pos.BOTTOM_CENTER);
+        // Posisikan container di pojok kanan bawah, sebelah kiri monster
+        AnchorPane.setBottomAnchor(container, 100.0);
+        AnchorPane.setRightAnchor(container, 350.0); // atur sesuai jarak dari monster
 
-        // Tambah ke root
-        ((AnchorPane) jumpscareImage.getParent()).getChildren().add(container);
-        AnchorPane.setBottomAnchor(container, 80.0);
-        AnchorPane.setLeftAnchor(container, (scene.getWidth() - 600) / 2); // estimasi center
+        if (!rootPane.getChildren().contains(container)) {
+            rootPane.getChildren().add(container);
+        }
+
     } else {
-        // Tampilkan bubble dialog kesalahan
+        // Bukan game over → tampilkan dialog kesalahan & lanjut ke soal berikutnya
         dialogBubble.setVisible(true);
-        dialogText.setText("");
+        dialogText.setText(""); // Kosongkan dulu
         playTypingEffect(msg);
 
-        // Posisikan dialog bubble adaptif di tengah bawah
-        AnchorPane.setLeftAnchor(dialogBubble, (scene.getWidth() - 600) / 2); // estimasi tengah
+        // Posisikan bubble di kiri monster
         AnchorPane.setBottomAnchor(dialogBubble, 180.0);
+        AnchorPane.setRightAnchor(dialogBubble, 350.0);
 
-        // Lanjutkan setelah 5 detik
         PauseTransition wait = new PauseTransition(Duration.seconds(5));
         wait.setOnFinished(e -> {
             jumpscareImage.setVisible(false);
