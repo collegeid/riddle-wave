@@ -19,9 +19,8 @@ public class Cutscene extends Application {
     public void start(Stage stage) {
         // Path video
         // Mulai background music
-        BGMManager.play("resources/assets/Bgm/bgm.mp3");
-
-        String path = "resources/assets/video/Opening.mp4";
+        BGMManager.play("resources/assets/Bgm/ingame.mp3");
+        String path = "resources/assets/video/cutscene.mp4";
         Media media = new Media(new File(path).toURI().toString());
         MediaPlayer mediaPlayer = new MediaPlayer(media);
         MediaView mediaView = new MediaView(mediaPlayer);
