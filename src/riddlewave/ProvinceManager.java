@@ -64,9 +64,46 @@ public class ProvinceManager {
                 file.getParentFile().mkdirs();
                 file.createNewFile();
                 // Default initial setup
-                provinceStatus.put("Java", false);
+                provinceStatus.put("Java", false); // Sudah terbuka
                 provinceStatus.put("Kalimantan", true);
                 provinceStatus.put("Sulawesi", true);
+                provinceStatus.put("Sumatra", true);
+                provinceStatus.put("Papua", true);
+                provinceStatus.put("Bali", true);
+                provinceStatus.put("NusaTenggaraBarat", true);
+                provinceStatus.put("NusaTenggaraTimur", true);
+                provinceStatus.put("Maluku", true);
+                provinceStatus.put("MalukuUtara", true);
+                provinceStatus.put("Aceh", true);
+                provinceStatus.put("Riau", true);
+                provinceStatus.put("KepulauanRiau", true);
+                provinceStatus.put("Jambi", true);
+                provinceStatus.put("SumateraBarat", true);
+                provinceStatus.put("SumateraUtara", true);
+                provinceStatus.put("SumateraSelatan", true);
+                provinceStatus.put("BangkaBelitung", true);
+                provinceStatus.put("Banten", true);
+                provinceStatus.put("JawaBarat", true);
+                provinceStatus.put("JawaTengah", true);
+                provinceStatus.put("JawaTimur", true);
+                provinceStatus.put("Yogyakarta", true);
+                provinceStatus.put("KalimantanBarat", true);
+                provinceStatus.put("KalimantanSelatan", true);
+                provinceStatus.put("KalimantanTengah", true);
+                provinceStatus.put("KalimantanTimur", true);
+                provinceStatus.put("KalimantanUtara", true);
+                provinceStatus.put("SulawesiBarat", true);
+                provinceStatus.put("SulawesiSelatan", true);
+                provinceStatus.put("SulawesiTengah", true);
+                provinceStatus.put("SulawesiTenggara", true);
+                provinceStatus.put("SulawesiUtara", true);
+                provinceStatus.put("Gorontalo", true);
+                provinceStatus.put("PapuaBarat", true);
+                provinceStatus.put("PapuaPegunungan", true);
+                provinceStatus.put("PapuaSelatan", true);
+                provinceStatus.put("PapuaTengah", true);
+                provinceStatus.put("PapuaBaratDaya", true);
+
                 save();
             } else {
                 try (FileInputStream in = new FileInputStream(FILE_PATH)) {
