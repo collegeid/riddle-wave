@@ -16,32 +16,37 @@ public class ProvinceManager {
         save();
     }
 
-    public static void unlockNext(String currentProvince) {
-        try {
-            Properties prop = new Properties();
-            File file = new File(FILE_PATH);
-            FileInputStream fis = new FileInputStream(file);
-            prop.load(fis);
-            fis.close();
+   public static void unlockNext(String currentProvince) {
+    try {
+        Properties prop = new Properties();
+        File file = new File(FILE_PATH);
+        FileInputStream fis = new FileInputStream(file);
+        prop.load(fis);
+        fis.close();
 
-            List<String> keys = new ArrayList<>(prop.stringPropertyNames());
-            Collections.sort(keys); // urutkan jika perlu
-            int index = keys.indexOf(currentProvince);
+        List<String> keys = new ArrayList<>(prop.stringPropertyNames());
+        Collections.sort(keys); // Pastikan urut jika perlu
+        int index = keys.indexOf(currentProvince);
 
-            if (index >= 0 && index + 1 < keys.size()) {
-                String nextProvince = keys.get(index + 1);
-                if ("true".equals(prop.getProperty(nextProvince))) {
-                    prop.setProperty(nextProvince, "false");
-                    try (FileOutputStream fos = new FileOutputStream(file)) {
-                        prop.store(fos, "Unlocked next province");
-                    }
-                    System.out.println("Unlocked province: " + nextProvince);
+        if (index >= 0 && index + 1 < keys.size()) {
+            String nextProvince = keys.get(index + 1);
+            if ("true".equals(prop.getProperty(nextProvince))) {
+                prop.setProperty(nextProvince, "false");
+                try (FileOutputStream fos = new FileOutputStream(file)) {
+                    prop.store(fos, "Unlocked next province");
                 }
+
+                // ✅ Reload ke memory setelah perubahan file
+                load();
+
+                System.out.println("Unlocked province: " + nextProvince);
             }
-        } catch (IOException e) {
-            System.out.println("Gagal unlock provinsi berikutnya: " + e.getMessage());
         }
+    } catch (IOException e) {
+        System.out.println("Gagal unlock provinsi berikutnya: " + e.getMessage());
     }
+}
+
 
     public static boolean isLocked(String province) {
         return provinceStatus.getOrDefault(province, true); // default locked
