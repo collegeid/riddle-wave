@@ -24,10 +24,10 @@ import java.util.Map;
 public class MapSelectionScene {
 
     private static final String DIALOG_TEXT =
-        "Ini adalah peta provinsi Indonesia.\n" +
-        "Beberapa provinsi masih terkunci. Kamu bisa membukanya\n" +
-        "dengan menyelesaikan provinsi sebelumnya terlebih dahulu.\n" +
-        "Silakan pilih provinsi yang tersedia untuk mulai bermain!";
+        "Ini adalah Peta Pulau Besar di Indonesia.\n" +
+        "Beberapa Pulau masih terkunci. Kamu bisa membukanya\n" +
+        "dengan menyelesaikan Pulau yang telah Terbuka terlebih dahulu.\n" +
+        "Silakan pilih Pulau yang tersedia untuk mulai bermain!";
 
     private static Text dialogText;
     private static HBox provinceRow;
@@ -120,10 +120,10 @@ public class MapSelectionScene {
         stage.setScene(scene);
         stage.setFullScreen(true);
 
-        playTypingEffect(DIALOG_TEXT);
+        //playTypingEffect(DIALOG_TEXT);
     }
 
-    private static StackPane createProvinceItem(String provinceKey, boolean locked) {
+ private static StackPane createProvinceItem(String provinceKey, boolean locked, boolean showChecklist) {
         StackPane container = new StackPane();
         container.setAlignment(Pos.CENTER);
 
@@ -138,6 +138,14 @@ public class MapSelectionScene {
             lockIcon.setPreserveRatio(true);
             container.getChildren().add(lockIcon);
         }
+        
+        if (showChecklist) {
+            ImageView checklistIcon = new ImageView(new Image("file:resources/assets/UI/check.png"));
+            checklistIcon.setFitWidth(48);
+            checklistIcon.setPreserveRatio(true);
+            container.getChildren().add(checklistIcon);
+        }
+
 
         container.setOnMouseClicked(e -> {
             if (locked) {
@@ -169,13 +177,49 @@ public class MapSelectionScene {
         typing.play();
     }
 
-    private static void refreshProvinceRow() {
-        provinceRow.getChildren().clear();
-        Map<String, Boolean> updatedStatus = ProvinceManager.getAllStatus();
-        updatedStatus.entrySet().stream()
-            .sorted((a, b) -> Boolean.compare(a.getValue(), b.getValue()))
-            .forEach(entry -> {
-                provinceRow.getChildren().add(createProvinceItem(entry.getKey(), entry.getValue()));
-            });
+private static void refreshProvinceRow() {
+    provinceRow.getChildren().clear();
+    Map<String, Boolean> statusMap = ProvinceManager.getAllStatus();
+
+    String[] orderedKeys = {
+        "Sumatera", "Java", "Bali", "Nusa",
+        "Kalimantan", "Sulawesi", "Maluku", "Papua"
+    };
+
+    String latestUnlocked = null;
+    int unlockedCount = 0;
+
+    // Tahap 1: Temukan latest unlocked (false terakhir sebelum true pertama)
+    boolean foundFirstLocked = false;
+    for (String key : orderedKeys) {
+        boolean isLocked = statusMap.getOrDefault(key, true);
+        if (!isLocked && !foundFirstLocked) {
+            latestUnlocked = key;
+        }
+        if (isLocked) {
+            foundFirstLocked = true;
+        }
     }
+
+    // Tahap 2: Bangun tampilan provinsi dengan checklist/logika yang tepat
+    for (String key : orderedKeys) {
+        boolean isLocked = statusMap.getOrDefault(key, true);
+        boolean showChecklist = !isLocked && !key.equals(latestUnlocked);
+        if (!isLocked) unlockedCount++;
+
+        provinceRow.getChildren().add(createProvinceItem(key, isLocked, showChecklist));
+    }
+
+    // Dialog dinamis
+    if (unlockedCount == orderedKeys.length) {
+        playTypingEffect("Selamat! Kamu telah menamatkan semua provinsi.\nSilakan bermain ulang kapan saja!");
+    } else if (latestUnlocked != null && unlockedCount > 1) {
+        playTypingEffect("Selamat! Kamu telah membuka pulau " + latestUnlocked + ".\nSilakan klik gambar pulau tersebut untuk bermain\natau kamu dapat memainkan kembali Pulau - Pulau yang sudah berhasil kamu lewati sebelumnya !");
+    } else {
+        playTypingEffect(DIALOG_TEXT);
+    }
+}
+
+
+
 }

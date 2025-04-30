@@ -142,7 +142,8 @@ public class GameplayScene {
 
         // Sembunyikan soal
         questionBox.setVisible(false);
-
+       
+        dialogText.setText(""); // Kosongkan dulu
         // Langsung isi teks, tanpa animasi typing
         dialogText.setText("Keren! Kamu berhasil menyelesaikan Pulau " + provinceName + " ini");
         dialogBubble.setVisible(true);

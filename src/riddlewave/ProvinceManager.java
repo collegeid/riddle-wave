@@ -5,10 +5,15 @@ import java.util.*;
 
 public class ProvinceManager {
     private static final String FILE_PATH = "resources/save/provinces.properties";
-    private static final Map<String, Boolean> provinceStatus = new LinkedHashMap<>(); // Gunakan LinkedHashMap agar urutan terjaga
+    private static final Map<String, Boolean> provinceStatus = new LinkedHashMap<>();
+
+    private static final String[] ORDERED_KEYS = {
+        "Sumatera", "Java", "Bali", "Nusa",
+        "Kalimantan", "Sulawesi", "Maluku", "Papua"
+    };
 
     static {
-        load(); // Panggil saat pertama
+        load();
     }
 
     public static void unlock(String province) {
@@ -16,71 +21,60 @@ public class ProvinceManager {
         save();
     }
 
-   public static void unlockNext(String currentProvince) {
-    try {
-        Properties prop = new Properties();
-        File file = new File(FILE_PATH);
-        FileInputStream fis = new FileInputStream(file);
-        prop.load(fis);
-        fis.close();
+    public static void unlockNext(String currentProvince) {
+        int index = -1;
+        for (int i = 0; i < ORDERED_KEYS.length; i++) {
+            if (ORDERED_KEYS[i].equals(currentProvince)) {
+                index = i;
+                break;
+            }
+        }
 
-        List<String> keys = new ArrayList<>(prop.stringPropertyNames());
-        Collections.sort(keys); // Pastikan urut jika perlu
-        int index = keys.indexOf(currentProvince);
-
-        if (index >= 0 && index + 1 < keys.size()) {
-            String nextProvince = keys.get(index + 1);
-            if ("true".equals(prop.getProperty(nextProvince))) {
-                prop.setProperty(nextProvince, "false");
-                try (FileOutputStream fos = new FileOutputStream(file)) {
-                    prop.store(fos, "Unlocked next Pulau");
-                }
-
-                // ✅ Reload ke memory setelah perubahan file
-                load();
-
+        if (index != -1 && index + 1 < ORDERED_KEYS.length) {
+            String nextProvince = ORDERED_KEYS[index + 1];
+            if (provinceStatus.getOrDefault(nextProvince, true)) {
+                provinceStatus.put(nextProvince, false);
+                save();
                 System.out.println("Unlocked province: " + nextProvince);
             }
         }
-    } catch (IOException e) {
-        System.out.println("Gagal unlock Pulau berikutnya: " + e.getMessage());
     }
-}
-
 
     public static boolean isLocked(String province) {
-        return provinceStatus.getOrDefault(province, true); // default locked
+        return provinceStatus.getOrDefault(province, true);
     }
 
     public static Map<String, Boolean> getAllStatus() {
-        return provinceStatus;
+        return new LinkedHashMap<>(provinceStatus); // Return copy to prevent outside mutation
     }
 
     private static void load() {
         try {
-            Properties prop = new Properties();
             File file = new File(FILE_PATH);
+            provinceStatus.clear();
+
             if (!file.exists()) {
                 file.getParentFile().mkdirs();
                 file.createNewFile();
-                // Default initial setup
-                provinceStatus.put("Java", false); // Sudah terbuka
-                provinceStatus.put("Sumatera", true);
-                provinceStatus.put("Kalimantan", true);
-                provinceStatus.put("Sulawesi", true);
+                // Init default
+                provinceStatus.put("Sumatera", false); // awal buka
+                provinceStatus.put("Java", true);
                 provinceStatus.put("Bali", true);
                 provinceStatus.put("Nusa", true);
+                provinceStatus.put("Kalimantan", true);
+                provinceStatus.put("Sulawesi", true);
                 provinceStatus.put("Maluku", true);
                 provinceStatus.put("Papua", true);
-
                 save();
             } else {
-                try (FileInputStream in = new FileInputStream(FILE_PATH)) {
+                Properties prop = new Properties();
+                try (FileInputStream in = new FileInputStream(file)) {
                     prop.load(in);
-                    provinceStatus.clear();
-                    for (String key : prop.stringPropertyNames()) {
-                        provinceStatus.put(key, Boolean.parseBoolean(prop.getProperty(key)));
-                    }
+                }
+
+                for (String key : ORDERED_KEYS) {
+                    String val = prop.getProperty(key, "true");
+                    provinceStatus.put(key, Boolean.parseBoolean(val));
                 }
             }
         } catch (IOException e) {
@@ -89,13 +83,13 @@ public class ProvinceManager {
     }
 
     private static void save() {
-        try {
-            Properties prop = new Properties();
-            for (Map.Entry<String, Boolean> entry : provinceStatus.entrySet()) {
-                prop.setProperty(entry.getKey(), entry.getValue().toString());
-            }
-            try (FileOutputStream out = new FileOutputStream(FILE_PATH)) {
-                prop.store(out, "Pulau Riddle Wave");
+        try (PrintWriter writer = new PrintWriter(FILE_PATH)) {
+            writer.println("#Unlocked next Pulau");
+            writer.println("#" + new Date());
+
+            for (String key : ORDERED_KEYS) {
+                boolean status = provinceStatus.getOrDefault(key, true);
+                writer.println(key + "=" + status);
             }
         } catch (IOException e) {
             System.out.println("Gagal menyimpan Pulau: " + e.getMessage());
