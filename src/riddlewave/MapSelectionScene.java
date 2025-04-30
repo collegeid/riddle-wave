@@ -245,9 +245,9 @@ private static void refreshProvinceRow() {
 
     // Dialog dinamis
     if (unlockedCount == orderedKeys.length) {
-        playTypingEffect("Selamat! Kamu telah menamatkan semua provinsi.\nSilakan bermain ulang kapan saja!");
+        playTypingEffect("Kamu telah menamatkan semua provinsi.\nSilakan bermain ulang kapan saja!");
     } else if (latestUnlocked != null && unlockedCount > 1) {
-        playTypingEffect("Selamat! Kamu telah membuka pulau " + latestUnlocked + ".\nSilakan klik gambar pulau tersebut untuk bermain\natau kamu dapat memainkan kembali Pulau - Pulau\nyang sudah berhasil kamu lewati sebelumnya !");
+        playTypingEffect("Kamu telah membuka pulau " + latestUnlocked + ".\nSilakan klik gambar pulau tersebut untuk bermain\natau kamu dapat memainkan kembali Pulau - Pulau\nyang sudah berhasil kamu lewati sebelumnya !");
     } else {
         playTypingEffect(DIALOG_TEXT);
     }
