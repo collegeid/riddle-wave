@@ -1,0 +1,32 @@
+{
+    "bin": {"RiddleWave": "jdeploy-bundle/jdeploy.js"},
+    "author": "Febriansah Dirgantara, Siswo Adi Nugroho, Julian Dwi Putra",
+    "description": "Riddle Wave is an interactive educational game that takes you on an adventurous journey through Indonesia\u2019s major islands. Each island unlocks a unique set of questions, visuals, and mythical encounters that test your knowledge while keeping you engaged with captivating narration and vibrant design.",
+    "main": "index.js",
+    "preferGlobal": true,
+    "repository": "",
+    "version": "0.0.1",
+    "jdeploy": {
+        "jdk": true,
+        "publishTargets": [{
+            "name": "npm: RiddleWave",
+            "type": "NPM",
+            "url": "RiddleWave"
+        }],
+        "javaVersion": "23",
+        "jar": "RiddleWave.jar",
+        "javafx": true,
+        "title": "Riddle Wave"
+    },
+    "dependencies": {
+        "command-exists-promise": "^2.0.2",
+        "node-fetch": "2.6.7",
+        "tar": "^4.4.8",
+        "yauzl": "^2.10.0",
+        "shelljs": "^0.8.4"
+    },
+    "license": "ISC",
+    "name": "riddlewave",
+    "files": ["jdeploy-bundle"],
+    "scripts": {"test": "echo \"Error: no test specified\" && exit 1"}
+}
