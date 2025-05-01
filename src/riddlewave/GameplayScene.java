@@ -150,39 +150,38 @@ public class GameplayScene {
        
         dialogText.setText(""); // Kosongkan dulu
         // Langsung isi teks, tanpa animasi typing
- dialogText.setText("Keren! Kamu berhasil menyelesaikan Pulau " + provinceName + " ini");
-dialogBubble.setVisible(true);
+        dialogText.setText("Keren! Kamu berhasil menyelesaikan Pulau " + provinceName + " ini");
+        dialogBubble.setVisible(true);
 
-playTypingEffectTextCallback(dialogText, () -> {
-    // Jalankan setelah efek ketik selesai
-    // Tambahkan kembali bot Wisanggeni
-    ImageView newBot = new ImageView(new Image("file:resources/assets/Karakter/Wisanggeni.png"));
-    newBot.setFitHeight(450);
-    newBot.setPreserveRatio(true);
-    AnchorPane.setLeftAnchor(newBot, 50.0);
-    AnchorPane.setBottomAnchor(newBot, 50.0);
+        // Tambahkan kembali bot Wisanggeni jika belum ada
+        ImageView newBot = new ImageView(new Image("file:resources/assets/Karakter/Wisanggeni.png"));
+        newBot.setFitHeight(450);
+        newBot.setPreserveRatio(true);
+        AnchorPane.setLeftAnchor(newBot, 50.0);
+        AnchorPane.setBottomAnchor(newBot, 50.0);
 
-    if (!rootPane.getChildren().contains(newBot)) {
-        rootPane.getChildren().add(newBot);
-    }
+        if (!rootPane.getChildren().contains(newBot)) {
+            rootPane.getChildren().add(newBot);
+        }
 
-    // Tombol kembali ke map
-    Button backBtn = new Button("Lanjut Pulau Lain");
-    backBtn.setFont(Font.font(18));
-    AnchorPane.setBottomAnchor(backBtn, 40.0);
-    AnchorPane.setRightAnchor(backBtn, 40.0);
-    backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
-    backBtn.setOnAction(e -> MapSelectionScene.show(stage));
+        // Tambahkan tombol kembali ke map
+        Button backBtn = new Button("Lanjut Pulau Lain");
+        backBtn.setFont(Font.font(18));
+        AnchorPane.setBottomAnchor(backBtn, 40.0);
+        AnchorPane.setRightAnchor(backBtn, 40.0);
+        backBtn.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-text-fill: white; -fx-padding: 10px 20px;");
+        backBtn.setOnAction(e -> MapSelectionScene.show(stage));
 
-    VBox finishBox = new VBox(20, dialogBubble, backBtn);
-    finishBox.setAlignment(Pos.CENTER);
-    AnchorPane.setBottomAnchor(finishBox, 100.0);
-    AnchorPane.setLeftAnchor(finishBox, 360.0);
+        VBox finishBox = new VBox(20, dialogBubble, backBtn);
+        finishBox.setAlignment(Pos.CENTER);
 
-    if (!rootPane.getChildren().contains(finishBox)) {
-        rootPane.getChildren().add(finishBox);
-    }
-});
+        AnchorPane.setBottomAnchor(finishBox, 100.0);
+        AnchorPane.setLeftAnchor(finishBox, 360.0); // Sesuaikan posisi tengah
+
+        if (!rootPane.getChildren().contains(finishBox)) {
+            rootPane.getChildren().add(finishBox);
+        }
+
         return;
     }
 
@@ -385,33 +384,6 @@ private static void showJumpscare(Stage stage, String msg, boolean isGameOver, S
         typing.play();
     }
     
-private static void playTypingEffectTextCallback(Text targetText, Runnable onFinished) {
-    String fullText = targetText.getText();
-    targetText.setText(""); // kosongkan dulu
-
-    File soundFile = new File("resources/assets/audio/ketik.wav");
-    String soundPath = soundFile.toURI().toString();
-    AudioClip clickSound = new AudioClip(soundPath);
-
-    Timeline typing = new Timeline();
-    final int[] i = {0};
-
-    typing.getKeyFrames().add(new KeyFrame(Duration.millis(30), ev -> {
-        if (i[0] < fullText.length()) {
-            targetText.setText(fullText.substring(0, i[0] + 1));
-            clickSound.play();
-            i[0]++;
-        } else {
-            typing.stop();
-            if (onFinished != null) {
-                onFinished.run();
-            }
-        }
-    }));
-
-    typing.setCycleCount(Timeline.INDEFINITE);
-    typing.play();
-}
 
 private static void playTypingEffectText(Text targetText) {
     String fullText = targetText.getText();
@@ -434,6 +406,7 @@ private static void playTypingEffectText(Text targetText) {
             i[0]++;
         } else {
             typing.stop();
+            
         }
     }));
 

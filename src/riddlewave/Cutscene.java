@@ -20,10 +20,9 @@ import javafx.util.Duration;
 
 import java.io.File;
 
-public class Cutscene extends Application {
+public class Cutscene  {
 
-    @Override
-    public void start(Stage stage) {
+    public static void show(Stage stage) {
         BGMManager.play("resources/assets/Bgm/ingame.mp3");
         String path = "resources/assets/video/cutscene.mp4";
         Media media = new Media(new File(path).toURI().toString());
@@ -85,7 +84,5 @@ public class Cutscene extends Application {
         mediaPlayer.play();
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    
 }
