@@ -70,7 +70,6 @@ public class MapSelectionScene {
         provinceRow = new HBox(40);
         provinceRow.setPadding(new Insets(20));
         provinceRow.setAlignment(Pos.CENTER_LEFT);
-        refreshProvinceRow();
         provinceRow.setStyle("-fx-background-color: transparent;");
         provinceRow.setBackground(Background.EMPTY);
 
@@ -129,7 +128,9 @@ public class MapSelectionScene {
         stage.setScene(scene);
         stage.setFullScreen(true);
 
-        //playTypingEffect(DIALOG_TEXT);
+        refreshProvinceRow();
+
+        playTypingEffect(DIALOG_TEXT);
     }
 
     private static final Map<String, String> DISPLAY_NAMES = Map.of(
@@ -184,12 +185,7 @@ public class MapSelectionScene {
                 playTypingEffect("Hehh! Pulau " + DISPLAY_NAMES.getOrDefault(provinceKey, provinceKey) +
                     " ini masih terkunci.\nSelesaikan Pulau sebelumnya untuk membukanya !!!.");
             } else {
-                  if (typing != null) {
-                    typing.stop();  // Hentikan efek ketik
-                  }   
-                  if (typingSound != null) {
-                    typingSound.stop();  // Hentikan suara ketik
-                  }
+                
                 stopTypingSound();  // Hentikan suara ketik saat provinsi dipilih
                 System.out.println("Provinsi dipilih: " + provinceKey);
                 riddlewave.GameplayScene.show(
@@ -206,6 +202,13 @@ public class MapSelectionScene {
             typing = new Timeline();  // Reset timeline setiap kali efek ketik dimulai
             final int[] i = {0};
 
+              if (typing != null) {
+                    typing.stop();  // Hentikan efek ketik
+                  }   
+                  if (typingSound != null) {
+                    typingSound.stop();  // Hentikan suara ketik
+                  }
+                  
             // Mulai memainkan suara ketik hanya jika belum ada (menggunakan variabel global)
             if (typingSound == null) {
                 typingSound = new AudioClip(new File("resources/assets/audio/ketik.wav").toURI().toString());
